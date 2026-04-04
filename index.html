@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FUKUOKA ATTRACTIONS</title>
+    <style>
+        /* --- 🎨 [基石樣式 - 最終保護層] --- */
+        :root { 
+            --bg: #f2f0eb; --paper: #ffffff; --accent: #37474f; --glow: #78909c; --text: #455a64; --line: rgba(0,0,0,0.06);
+            --palette-1: #8ba3a1; --palette-1-bg: #e9eeed;
+            --palette-2: #a98b98; --palette-2-bg: #f2edf0;
+            --palette-3: #9da98b; --palette-3-bg: #f0f2ed;
+            --palette-4: #8b92a9; --palette-4-bg: #edf0f2;
+            --palette-5: #a99a8b; --palette-5-bg: #f2f0ed;
+            --danger: #ef5350;
+        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding-top: 235px; color: var(--text); overflow-x: hidden; }
+
+        /* 🚀 [修復 1] 強化所有按鈕按壓回饋 */
+        .btn-bounce, .card, .action-btn, .text-btn, .filter-trigger, .close-btn, .pill, .tag-sec-header, .recom-sticker, .link-btn, .filter-header, .master-row, .split-num { 
+            cursor: pointer; transition: transform 0.1s, background 0.2s, color 0.2s; 
+        }
+        .btn-bounce:active, .card:active, .action-btn:active, .pill:active, .link-btn:active, .recom-sticker:active, .split-num:active { 
+            transform: translateY(1.5px) scale(0.96) !important; 
+        }
+
+        /* --- 🎨 Header & Status Bar --- */
+        .header-fixed-container { position: fixed; top: 0; left: 0; width: 100%; background: var(--bg); z-index: 2000; padding-top: 20px; }
+        .header-inner { max-width: 600px; margin: 0 auto; padding: 0 10px; }
+        .app-title { margin: 0 0 12px 0; font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+        .nav-row { display: flex; align-items: center; gap: 8px; padding-bottom: 12px; }
+        .search-pill-group { flex: 1; display: flex; background: var(--paper); padding: 4px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.04); align-items: center; border: 1px solid var(--line); height: 42px; min-width: 0; }
+        .search-input { flex: 1; padding: 0 10px; border: none; font-size: 14px; background: transparent; color: var(--accent); outline: none; }
+        .filter-trigger { background: var(--accent); color: white; padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; }
+        .action-row { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 10px 12px 10px; max-width: 600px; margin: 0 auto; }
+        .action-btn { background: var(--paper); border: 1.2px solid #d1d1d1; border-radius: 8px; padding: 8px 12px; font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; }
+        .status-bar { width: 100%; background: var(--bg); padding: 10px 5px; color: #90a4ae; font-weight: 700; font-size: 10px; border-top: 1px solid rgba(0,0,0,0.02); display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .status-item { white-space: nowrap; }
+
+        /* --- 🎨 景點卡片 --- */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px; padding: 12px; width: 100%; justify-content: center; }
+        .card { width: 165px; height: 140px; background: var(--paper); border-radius: 18px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); display: flex; flex-direction: column; position: relative; overflow: hidden; border: 1px solid var(--line); flex-shrink: 0; }
+        .reg-rect-tag { position: absolute; top: 0; left: 0; padding: 4px 10px; border-bottom-right-radius: 10px; z-index: 2; font-size: 9px; font-weight: 900; color: white; }
+        .recom-sticker { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fafafa; border: 1px solid #eee; z-index: 20; }
+        .recom-sticker.rated { font-size: 14px; border: 1.5px solid var(--palette-2); background: var(--palette-2-bg); }
+        .recom-sticker.empty { font-size: 8px; font-weight: 900; color: #ccc; border: 1.5px dashed #ccc; }
+        
+        .title-row { display: flex; align-items: center; gap: 6px; margin-top: 25px; z-index: 3; }
+        .card-icon { font-size: 18px; flex-shrink: 0; }
+        .name-cn { font-size: 15px; font-weight: 800; color: var(--accent); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .name-en { font-size: 8.5px; color: #b0bec5; text-transform: uppercase; margin-bottom: 2px; padding-left: 24px; font-weight: 700; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .card-tag-row { display: none; padding-left: 24px; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+        .card-tag-row.active { display: flex; }
+        .tag-mini-pill { font-size: 8px; font-weight: 900; color: var(--palette-2); background: var(--palette-2-bg); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(169, 139, 152, 0.2); }
+        .card-bottom-text { font-size: 12px; color: #78909c; line-height: 1.4; padding-top: 8px; border-top: 1px solid #f5f5f5; margin-top: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+        /* --- 🏷️ Tag Dropdown --- */
+        .tag-dropdown-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
+        .tag-select { appearance: none; background: #fff; border: 1.5px solid #eee; border-radius: 10px; padding: 10px 30px 10px 12px; font-size: 13px; font-weight: 800; color: #b0bec5; outline: none; width: 100%; cursor: pointer; transition: all 0.2s; }
+        .tag-select.has-val { background: var(--palette-2-bg) !important; border-color: var(--palette-2) !important; color: var(--palette-2) !important; }
+        .tag-dropdown-wrapper::after { content: "▼"; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 10px; color: inherit; pointer-events: none; }
+
+        /* --- 🎨 Modals --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(55,71,79,0.15); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: rgba(255,255,255,0.98); width: 92%; max-width: 420px; min-width: 320px; min-height: 60vh; border-radius: 25px; position: relative; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); }
+        #my-cards-overlay .modal-content { width: 70vw !important; max-width: 900px; min-width: 380px !important; }
+        .modal-body { padding: 25px; overflow-y: auto; flex: 1; }
+        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 22px; color: #cfd8dc; z-index: 100; font-weight: 900; }
+
+        /* --- 🚀 TAGS MANAGEMENT --- */
+        .tag-row { display: flex; align-items: center; gap: 10px; padding: 12px; background: #f9f9f7; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--line); }
+        .tag-input { flex: 1; border: none; background: transparent; font-size: 14px; font-weight: 800; outline: none; padding: 8px; color: var(--accent); border-radius: 6px; transition: 0.2s; }
+        .tag-input:not([readonly]) { background: white !important; box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); }
+        .tag-edit-btn { font-size: 11px; font-weight: 900; color: var(--glow); text-transform: uppercase; min-width: 50px; text-align: right; }
+
+        /* --- 🧪 Filter UI --- */
+        .filter-section { background: #fff; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; padding: 0 12px; }
+        .filter-header { height: 50px; display: flex; align-items: center; justify-content: space-between; }
+        .filter-title { font-size: 13px !important; font-weight: 900; color: var(--accent); }
+        .filter-expand-area { padding-bottom: 15px; display: none; }
+        .filter-section.open .filter-expand-area { display: block; }
+        .filter-arrow { font-size: 10px; color: var(--glow); transition: 0.3s; transform: rotate(0deg); display: inline-block; }
+        .filter-section.open .filter-arrow { transform: rotate(90deg); }
+        .master-row { background: var(--palette-5-bg); padding: 10px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: var(--accent); }
+        .pill-box { display: flex; flex-wrap: wrap; gap: 8px; }
+        .pill { padding: 6px 12px; border-radius: 8px; background: #fdfdfb; border: 1px solid #e0e0e0; font-size: 11px; font-weight: 800; color: var(--text); }
+        .pill.active { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
+        /* 🚀 [修復] 選項冇色樣式 */
+        .pill.disabled { opacity: 0.85; pointer-events: none; background: #f5f5f5 !important; color: #ccc !important; border-color: #eee !important; }
+
+        /* --- 🎨 詳細內容與排版保護 --- */
+        .layer-tags { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; white-space: nowrap; overflow: hidden; }
+        /* 🚀 [修復] Detail 視窗 Tag 掣縮細 */
+        .layer-tags .tag-dropdown-wrapper { width: 110px !important; margin-left: auto; margin-right: 30px; margin-bottom: 0; }
+        .layer-tags .tag-select { padding: 2px 20px 2px 10px !important; font-size: 10.5px !important; height: 26px !important; border-radius: 8px !important; }
+
+        .hash-tag { color: var(--glow); font-size: 12px; font-weight: 800; flex-shrink: 0; }
+        .layer-title-row { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 20px; }
+        .det-cn { font-size: 28px; font-weight: 900; color: var(--accent); line-height: 1.1; }
+        .det-en { font-size: 14px; color: #b0bec5; font-weight: 700; text-transform: uppercase; }
+        .det-info-line { font-size: 13px; margin-bottom: 8px; font-weight: 700; color: var(--text); }
+        .det-links-row { display: flex; gap: 10px; margin: 20px 0; }
+        .link-btn { flex: 1; text-align: center; padding: 14px; border-radius: 12px; font-weight: 800; text-decoration: none; font-size: 12px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .link-nav { background: var(--accent); color: white; }
+        .link-ref { border: 2px solid var(--accent); color: var(--accent); }
+        .det-points-simple { font-size: 13px; padding: 12px; background: #f9f9f7; border-radius: 10px; font-weight: 700; margin-bottom: 15px; }
+        .det-intro { font-size: 14px; line-height: 1.7; color: var(--text); }
+
+        /* 🚀 [修復] Split-button 互動 */
+        .split-link-btn { display: flex; flex-direction: column; padding: 0 !important; overflow: hidden; background: white; border: 2.5px solid var(--accent); }
+        .split-top { font-size: 9px; height: 18px; width: 100%; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid rgba(55,71,79,0.15); color: var(--accent); font-weight: 900; background: #fdfdfb; }
+        .split-bottom { display: flex; flex: 1; width: 100%; }
+        .split-num { flex: 1; display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--accent); font-size: 14px; font-weight: 800; border-right: 2px solid rgba(55,71,79,0.1); }
+        .split-num:last-child { border-right: none; }
+        .split-num:hover { background: var(--palette-2-bg); color: var(--palette-2); }
+	/* 🚀 [修復版] ADD & EDIT 視窗表單專屬樣式 */
+.form-group { margin-bottom: 16px; text-align: left; }
+
+.form-label { 
+    display: block; 
+    font-size: 10px; 
+    font-weight: 800; 
+    color: var(--glow); 
+    margin-bottom: 6px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+}
+
+/* 確保 Input 有底色，唔會變透明 */
+.form-input { 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 10px; 
+    border: 1.5px solid #eee; 
+    background: #f9f9f7 !important; /* 淺灰底色，確保睇得到 */
+    font-size: 14px; 
+    font-weight: 600;
+    color: var(--accent); 
+    outline: none; 
+    transition: all 0.2s;
+}
+
+/* 針對 ADD / EDIT 視窗入面粒大 Tag 掣 */
+.tag-dropdown-wrapper { position: relative; width: 100%; margin-bottom: 10px; }
+
+.tag-select { 
+    appearance: none; 
+    background: #f9f9f7; 
+    border: 1.5px solid #eee; 
+    border-radius: 10px; 
+    padding: 12px 35px 12px 12px; 
+    font-size: 14px; 
+    font-weight: 800; 
+    color: #b0bec5; 
+    outline: none; 
+    width: 100%; 
+    cursor: pointer; 
+}
+
+/* 當揀咗 Tag 之後，粒掣要變色 (跟返你之前嘅 logic) */
+.tag-select.has-val { 
+    background: var(--palette-2-bg) !important; 
+    border-color: var(--palette-2) !important; 
+    color: var(--palette-2) !important; 
+}
+
+/* 補返 Dropdown 粒箭頭 */
+.tag-dropdown-wrapper::after { 
+    content: "▼"; 
+    position: absolute; 
+    right: 15px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    font-size: 10px; 
+    color: inherit; 
+    pointer-events: none; 
+}
+
+/* 管理按鈕（UPDATE/DELETE） */
+.manage-btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+.manage-btn-row .action-btn { 
+    flex: 1; min-width: 120px; height: 50px; border: none; 
+    font-size: 12px; font-weight: 900; border-radius: 12px; color: white; 
+}
+.btn-update { background: var(--accent); }
+.btn-delete { background: var(--danger); }
+    </style>
+</head>
+<body onclick="void(0)">
+
+    <div class="header-fixed-container">
+        <div class="header-inner">
+            <h1 class="app-title">FUKUOKA</h1>
+            <div class="nav-row">
+                <div class="search-pill-group">
+                    <input type="text" id="search-input" class="search-input" placeholder="中文名 / 英文名 / 區域 / 類別內容 / Tag..." oninput="render()">
+                    <div class="filter-trigger btn-bounce" onclick="openFilterModal()">FILTER</div>
+                </div>
+            </div>
+            <div class="action-row">
+                <div class="action-btn btn-bounce" onclick="alert('MAP 開發中')">MAP</div>
+                <div class="action-btn btn-bounce" onclick="openTagsModal()">TAGS</div>
+                <div class="action-btn btn-bounce" onclick="openAddModal()">ADD</div>
+                <div class="action-btn btn-bounce" onclick="openMyCards()">MY CARDS</div>
+            </div>
+        </div>
+        <div class="status-bar" id="status-display">讀取中...</div>
+    </div>
+
+    <main class="grid" id="card-grid"></main>
+
+    <div id="tags-overlay" class="modal-overlay" onclick="closeTagsModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeTagsModal()">✕</span>
+            <div class="modal-body">
+                <h2 style="font-weight:900; color:var(--accent); margin-bottom:20px;">TAGS MANAGEMENT</h2>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <button class="action-btn btn-bounce" style="flex:1; background:var(--accent); color:white; border:none;" onclick="createNewTag()">CREATE</button>
+                    <button id="tag-del-label" class="action-btn btn-bounce" style="flex:1; background:var(--danger); color:white; border:none;" onclick="deleteSelectedTags()">DELETE (0)</button>
+                </div>
+                <div id="tag-list-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="my-cards-overlay" class="modal-overlay" onclick="closeModal('my-cards-overlay')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeModal('my-cards-overlay')">✕</span>
+            <div class="modal-body">
+                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">MY CARDS (EDIT / REMOVE)</h2>
+                <div class="grid" id="my-cards-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-overlay" class="modal-overlay" onclick="closeModal('edit-overlay')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeModal('edit-overlay')">✕</span>
+            <div class="modal-body" id="edit-modal-body"></div>
+        </div>
+    </div>
+
+    <div id="detail-overlay" class="modal-overlay" onclick="closeModal('detail-overlay')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeModal('detail-overlay')">✕</span>
+            <div class="modal-body" id="det-content"></div>
+        </div>
+    </div>
+
+    <div id="add-overlay" class="modal-overlay" onclick="closeModal('add-overlay')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeModal('add-overlay')">✕</span>
+            <div class="modal-body">
+                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">ADD NEW SPOT</h2>
+                <div id="add-tag-dropdown-container"></div>
+                <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+                    <span class="form-label" style="margin-bottom:0">推薦評分</span>
+                    <div id="add-recom-sticker" class="recom-sticker btn-bounce empty" style="position:static; width:40px; height:40px;" onclick="cycleAddRating()">待定</div>
+                </div>
+                <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="in-cn" placeholder="必填欄位"></div>
+                <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="in-en"></div>
+                <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="in-reg"></div>
+                <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="in-cat"></div>
+                <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="in-type"></div>
+                <div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="in-points"></div>
+                <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="in-nearby"></div>
+                <div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="in-intro" rows="2" style="resize:none"></textarea></div>
+                <div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="in-ref"></div>
+                <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL" required></div>
+                <button class="action-btn btn-bounce" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; margin-top:10px;" onclick="saveSpot()">SAVE SPOT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="filter-overlay" class="modal-overlay" onclick="closeModal('filter-overlay')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn btn-bounce" onclick="closeModal('filter-overlay')">✕</span>
+            <div class="modal-body">
+                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">FILTER SETTINGS</h2>
+                <div id="dynamic-filter-container"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="action-btn btn-bounce" style="flex:1;" onclick="resetAllFilters()">RESET</button>
+                    <button class="action-btn btn-bounce" style="flex:1; background:var(--accent); color:white;" onclick="applyFilters()">APPLY</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const RAW_PASTED_DATA = `石原牛	Ishiharagyu	美食餐廳	燒肉店	高CP值和牛午餐、不到700台幣吃和牛套餐、平板自助點餐、A5和牛商業午餐超划算、平日中午限定優惠、和牛口感入口即化、需預約	福岡中洲	中洲川端站	這間位於中洲川端附近的「石原牛」是內行人才知道的頂級燒肉名店，特別是以高品質 A5 和牛著稱。強烈推薦其平日中午限定的商業午餐套餐，僅需不到 700 元台幣便能享受到油脂分布均勻、入口即化的頂級和牛，性價比極高且包含米飯、沙拉與湯品，視覺與味覺雙重享受甚至可媲美神戶牛。店內採用現代化的平板點餐系統，雖然介面目前暫無中文，但圖示清晰易懂，更提供貼心的自助換網服務，對外國旅客極為友善。其肉質鮮甜且份量十足，兩個人點一份頂級和牛盤配上特選套餐，平均每人僅需 500 台幣左右。由於店內經常滿座，建議務必事先上網預約，是來到博多市區想要體驗高品質燒肉卻又不想傷荷包的首選。	https://youtu.be/fe4Eockm0HM?t=100, https://youtu.be/nZam6eLh_6w?t=1511	https://maps.app.goo.gl/YJbnXVwjDwAcCoEx5	2
+JR博多城	JR Hakata City	購物採買	百貨商場	九州最大交通樞紐、寶可夢中心、Hands生活雜貨	福岡博多	博多站	博多車站不僅是交通中心，更是由 AMU PLAZA、博多阪急與博多丸井（OIOI）組成的巨型購物聚落。在 OIOI 百貨內設有廣大的福岡寶可夢中心，是帶孩子或愛好者必掃貨的地點；而 AMU PLAZA 則佔據多層樓的 Hands 雜貨，提供最新、最齊全的美妝與居家設計品。這裡交通極度便利，出站即可開始逛街，且各大百貨與地下街連成一片，無論是追求日系流行服飾或是尋找特色紀念品，博多車站都能提供一站式的滿足。特別是伴手禮區與百貨美食街，集結了福岡最負盛名的伴手禮名產，非常適合在旅程尾聲進行最後採買。	https://youtu.be/fe4Eockm0HM?t=496	https://maps.app.goo.gl/JjMaS5nwbkJrcu477	3
+FUK COFFEE	FUK COFFEE	美食餐廳	咖啡廳	絕美雞蛋焦糖布丁、飛機主題裝修、福岡IG打卡名店	福岡天神	西鐵福岡(天神)站	FUK COFFEE 是福岡在地極具人氣的獨立咖啡品牌，其名稱與裝修風格巧妙結合了「福岡機場(FUK)」的航空元素，店內隨處可見登機牌與飛機相關的小巧思。最令遊客魂慶夢縈的莫過於其招牌「雞蛋布丁」，口感厚實綿密且充滿濃郁蛋香，上頭覆蓋的焦糖帶有些微的苦甜韻味，是平衡甜度的靈魂關鍵。咖啡部分亦表現出色，拉花精緻且豆子鮮烘，時常還有如 Hello Kitty 等期間限定的可愛圖案。這裡不僅是攝影打卡的聖地，其高品質的甜點水準更讓許多旅客二訪甚至多次造訪，是福岡精品咖啡文化的代表。	https://youtu.be/fe4Eockm0HM?t=1015	https://maps.app.goo.gl/io55oHQj9XKPSzdV8	
+福岡塔	Fukuoka Tower	觀光名勝	展望台	日本唯一海濱展望台、360度零死角夜景、高空戀人打卡點	福岡大濠 / 百道	西新站	高達 234 公尺的福岡塔是全日本唯一座落於海岸線旁的觀景台。這座三角柱狀的鏡面建築在陽光下閃耀著光芒，步入位於 123 公尺高的展望層，即可享受 360 度的絕佳視野。東側可俯瞰熱鬧的福岡市區燈火，西側則能直面博多灣的波光粼粼與落日餘暉。塔內特別設計了許多互動打卡區，包括情侶專屬的戀人聖地鎖與漂浮攝影點，非常適合拍照留念。建議在傍晚時分造訪，能一次捕捉到海平線上的夕陽與隨之而來的都市百萬夜景，是來到福岡感受城市與海洋交織美景的最佳地點。	https://youtu.be/fe4Eockm0HM?t=1078	https://maps.app.goo.gl/aukzQqhdWks8gXZu7	
+柳川遊船	Yanagawa Punting	主題體驗	觀光船	威尼斯風情護城河、船夫傳統名謠、穿梭古老水路	福岡郊區 (柳川)	西鐵柳川站	柳川被譽為九州的威尼斯，其錯綜複雜的護城河網是古時為了農業灌溉而建，如今則演變為迷人的觀光行程。搭乘由身穿傳統服飾船夫操縱的木製搖櫓船，沿著靜謐的水路緩緩漂行約一小時，過程中船夫會用日語或簡單的外語介紹沿岸古蹟與紀念碑，甚至會興致高昂地高歌一曲傳統民謠。最刺激的部分莫過於船隻穿過低矮橋墩時，船夫輕巧地跳上橋面再躍回船上的絕技。兩岸垂柳依依，古樸的房舍影綽其中，這種悠閒且充滿歷史底蘊的體驗，是讓人徹底放鬆、感受九州古鎮韻味的絕佳選擇。	https://youtu.be/fe4Eockm0HM?t=1285	https://maps.app.goo.gl/NC8bkqUz1izh3SvJ6	
+梅枝餅	Umegae Mochi	美食餐廳	和菓子店	太宰府必吃特色小點、現烤紅豆內餡、Q彈麻糬皮	福岡郊區 (太宰府)	太宰府天滿宮參道	走在太宰府天滿宮的參道上，隨處可見飄散著陣陣焦香的梅枝餅店鋪。這種傳統點心雖然取名為「梅枝」，但實際上並無梅子成分，而是以 Q 彈的麻糬皮包裹綿密的紅豆餡，放入壓有梅花圖樣的模具中現點現烤。外皮烤得微焦帶脆，內餡熱騰騰且甜而不膩，非常適合邊走邊吃。有趣的是，參道上雖然有眾多店家販售梅枝餅，但味道與品質其實都維持在高水準，不需要刻意排隊名店也能嚐到地道風味。搭配上一杯熱騰騰的甘酒或綠茶，在充滿古意的街道上享用這份古樸的甜點，是太宰府行程中最經典的味覺記憶。	https://youtu.be/fe4Eockm0HM?t=1490	https://maps.app.goo.gl/DfUcmF4eFjmBXcvx6	
+唐戶市場	Karato Market	美食餐廳	海鮮市場	週末限定馬關街、現做平價巨無霸壽司、河豚料理發源地	山口 (下關)	唐戶碼頭	唐戶市場位於山口縣下關市，是北九州行程中不可錯過的味覺盛宴。每逢週末，市場會變身為熱鬧的「馬關街」，各個攤位擺滿了現做的握壽司與海鮮料理。這裡最吸引人的是其「巨無霸」規格，一片厚實生魚片往往是連鎖店的兩倍大，價格卻極為平實。作為日本著名的河豚產地，遊客能在此以親民價格嚐到新鮮河豚生魚片與河豚味噌湯。買好壽司後，推薦走到市場外的草坪或海港邊坐著享用，吹著海風品嚐最頂級的海洋滋味。市場氣氛熱絡，充滿了傳統漁市場的活力，是喜愛海鮮的旅客最極致的朝聖地點。	https://youtu.be/fe4Eockm0HM?t=918, https://youtu.be/JFrQM24tp-4?t=1286	https://maps.app.goo.gl/7dRn9SDuNxauajj78	
+九州鐵道紀念館	Kyushu Railway History Museum	主題體驗	博物館	復古火車頭展示、模擬列車駕駛體驗、鐵道文物收藏	福岡郊區 (門司港)	門司港站	九州鐵道紀念館是鐵道迷與親子家庭的首選景點。館外露天展示了多台曾經在九州大地上奔馳的蒸汽火車頭與經典電聯車，遊客可以近距離與這些鋼鐵巨人合影。館內則展示了豐富的鐵道文物，包括歷代車票、乘務員服飾與精緻的模型。最受歡迎的設施是模擬駕駛系統，讓大人小孩都能體驗操縱火車前行的樂趣。戶外甚至還有縮小版的「迷你鐵道」，讓小朋友能親自搭乘穿梭在仿真軌道上。這裡不僅呈現了日本鐵道的發展史，更透過豐富的互動裝置讓歷史變得生動有趣，是門司港行程中最具知識與娛樂性的景點。	https://youtu.be/fe4Eockm0HM?t=2157	https://maps.app.goo.gl/dCnywmQXSooEUf6G9	
+關門海峽博物館	Kanmon Strait Museum	觀光名勝	博物館	互動式海峽歷史展、絕美海景咖啡廳、大正浪漫復古街道	福岡郊區 (門司港)	門司港站	這座現代化的博物館座落於海峽岸邊，其建築設計本身就如同一艘巨大的客輪。館內透過高科技的互動投影與大型環型螢幕，生動地講述了關門海峽的地理演變與航運歷史。四樓設有一間坐擁無敵海景的景觀咖啡廳，大片落地窗能讓遊客遠眺關門大橋與往來的巨輪。館內甚至重現了門司港大正時代的復古街景，讓人彷彿穿越時空回到那個國際貿易繁榮的年代。這裡結合了教育、藝術與休閒，即便對歷史不感興趣的遊客，也能在光影交織的展間中獲得極佳的視覺享受。距離火車站步行僅需數分鐘，是避暑與享受悠閒午後的絕佳室內景點。	https://youtu.be/fe4Eockm0HM?t=2255	https://maps.app.goo.gl/7h2CpfS5HFjDjNgE6	
+DACOMECCA	DACOMECCA	美食餐廳	麵包店	與超人氣甜甜圈 I am Donut 同集團、招牌烤香腸麵包套餐必點、開放式廚房可觀看製作過程、店內採用大量木質與乾燥花裝飾	福岡博多	博多站	這家位於博多站周邊的麵包名店 DACOMECCA，以其極致的設計感與高品質麵包聞名。店內空間寬敞明亮，開放式廚房傳出的香氣令人垂涎。其招牌香腸麵包選用爽脆多汁的肉餡，搭配外酥內軟的特製麵包，層次豐富。對於喜愛精緻烘焙的旅客來說，這裡不僅是味覺的享受，更是視覺的饗宴。店內獨特的裝修風格與充滿質感的裝飾，讓用餐過程充滿儀式感，無論是作為早餐還是午後點心，都是福岡旅遊中令人驚艷的味覺記憶，是開啟福岡早晨最完美的開端。	https://youtu.be/JFrQM24tp-4?t=52	https://maps.app.goo.gl/mbgSM8PpLKMfkkLU8	
+福岡城遺跡	Fukuoka Castle Ruins	觀光名勝	歷史遺址	歷史悠久的江戶時代古城遺跡、保留完整的石牆與護城河景觀、春季著名的賞櫻勝地、設有觀景平台可遠眺市區	福岡天神	舞鶴公園	福岡城遺跡展現了昔日「黑田長政」時代的雄偉氣象。雖然主建築已不在，但那保存完好的層疊石牆依然訴說著歷史的滄桑。步入遺址，可以見到宏偉的護城河與防禦工事。站上昔日的天守台，不僅能俯瞰整座舞鶴公園，還能將遠方的大濠公園與福岡塔盡收眼底。這裡是一處讓人在繁華城市中尋找寧靜、感受歷史底蘊的絕佳去處，特別是春季櫻花盛開時，整座城址會被粉嫩色彩包圍，更是攝影愛好者的天堂與福岡市民最愛的散步場所。	https://youtu.be/JFrQM24tp-4?t=180	https://maps.app.goo.gl/dwRfMBUnPjPg3eVE8	
+福岡市美術館	Fukuoka City Art Museum	觀光名勝	美術館	展示歷史文物與當代藝術作品、戶外設有草間彌生的南瓜藝術裝置、建築設計簡約大氣	福岡大濠 / 百道	大濠公園	座落於大濠公園一隅的福岡市美術館，是藝術愛好者的必訪之地。館內收藏豐富，從古代佛像、茶具到現代藝術大師的作品應有盡有。美術館本身簡約大氣的建築結構也是一大看點。最受矚目的莫過於戶外廣場上的草間彌生「南瓜」裝置藝術，是許多旅客爭相合照的熱點。美術館與周邊湖光山色融為一體，大片玻璃窗將公園綠意引入室內，不僅提供了知性的深度旅程，也是在漫步公園後休憩與沉澱心靈的藝術殿堂。	https://youtu.be/JFrQM24tp-4?t=345	https://maps.app.goo.gl/iiQvRRztqTUDJxVA6	
+櫻井二見浦	Sakurai Futamigaura's Couple Stones	觀光名勝	自然景觀	糸島最具代表性的地標、兩座巨大岩石以注連繩相連、象徵姻緣、純白色海上鳥居非常壯觀、夕陽百選之一的絕美海景	福岡郊區 (糸島)	二見浦海岸	位於糸島二見浦的海上鳥居與夫婦岩，以其神聖而唯美的純白身影吸引無數訪客。白色的鳥居矗立在湛藍的海水中，與後方緊緊相依、象徵姻緣的夫婦岩構成了一幅和諧的畫面。這裡不僅是著名的結緣聖地，更是攝影者的夢幻取景地。隨著潮汐變化，鳥居在波光粼粼中呈現出不同神態，特別是當夕陽西下，餘暉灑落在白色構造上，展現了糸島自然景觀中那種靜謐而動人的靈氣。這裡是「日本夕陽百選」之一，是福岡近郊不容錯過的打卡勝地，讓人能感受到海洋的療癒力量。	https://youtu.be/JFrQM24tp-4?t=547	https://maps.app.goo.gl/HGcSH8weXKDa63mf7	
+糸島海鮮堂	Itoshima Kaisen-do	美食餐廳	海鮮餐廳	糸島極具人氣的海景海鮮餐廳、招牌海鮮丼配料豐盛、包含甜蝦、海膽與各類生魚片、設有靠窗座位可飽覽海天一色	福岡郊區 (糸島)	二見浦附近	糸島海鮮堂將新鮮漁獲與絕美海景完美結合。店內的招牌海鮮丼以華麗的擺盤與極致的鮮度著稱，碗中堆滿了甜蝦、海膽與肥美的現切生魚片，每一口都能品嚐到大海的饋贈。最奢華的體驗莫過於坐在面海的玻璃窗前，一邊品嚐鮮甜的生鮮料理，一邊欣賞窗外蔚藍的海岸線。這裡提供的不僅是美食，更是一種結合自然律動的五感饗宴，是糸島之旅中味蕾與視覺的雙重高峰。無論是擺盤的精緻度還是食材的高品質，都讓這間店成為糸島地區最具代表性的餐廳之一。	https://youtu.be/JFrQM24tp-4?t=604	https://maps.app.goo.gl/2dGxFrDkpwRfvH1U8	
+天使之翼	Angel Wings Mural	人氣打卡	藝術彩繪	位於海灘牆面上的巨大天使翅膀彩繪、糸島著名的網美拍照熱點、鄰近 Palm Beach The Gardens 購物區	福岡郊區 (糸島)	中村海灘	隱藏在糸島海岸旁的「天使之翼」彩繪牆，是這座小島青春活力與藝術感的縮影。細膩的筆觸在海灘旁的牆面勾勒出一雙雪白的翅膀，遊客能在此留下如夢似幻的紀念。周邊環繞著多間特色海景咖啡廳與質感小店，拍完照後可以漫步於海灘，享受屬於糸島的慢步調時光。這裡簡約卻具代表性的設計，成功將海邊的一隅轉化為極具話題性的藝術空間，是網美與情侶來到糸島必留影的熱門座標，讓人感受到濃厚的休閒度假氛圍。	https://youtu.be/JFrQM24tp-4?t=737	https://maps.app.goo.gl/DSx2BGLwJ86rN3ht8	
+Press Butter Sand	Press Butter Sand	購物採買	伴手禮店	九州限定「草莓口味」焦糖夾心餅乾、使用福岡產「甘王草莓」、口感酥脆、奶香味濃郁、精美紅色包裝適合當伴手禮	福岡天神	天神地下街	這家來自東京的精品焦糖夾心餅乾，在福岡天神地下街推出了極具吸引力的九州限定「甘王草莓」口味。雙層加壓烤製的餅乾外皮保有極致的酥脆感，內餡則是滑順奶霜與濃縮草莓果醬的完美比例。草莓的自然酸甜中和了奶油的厚實，讓人一試成癮。其亮眼的包裝與穩定的品質，無疑是來到福岡旅遊時，最具質感的伴手禮選擇。位於便利的天神地下街，是許多旅客回程前必買的清單項目，將福岡最具代表性的水果轉化為優雅的點心。	https://youtu.be/JFrQM24tp-4?t=933	https://maps.app.goo.gl/qPF3ZP2z82jAn97i8	
+伊都きんぐ	Itoking	美食餐廳	甜點店	草莓甜點專賣店、僅使用高品質甘王草莓、招牌草莓冰沙口感濃郁、保留纖維感、提供多款草莓夾心銅鑼燒等創意甜點	福岡天神	天神地下街	「伊都きんぐ」是草莓愛好者的終極朝聖地。店內致力於發揮福岡國寶級「甘王草莓」的最大潛力，將其轉化為各式令人驚豔的甜點。特別是其招牌草莓冰沙，每一口都能感受到新鮮果肉被打碎後的細膩與爆發性的香氣，酸甜平衡且毫無人工感。店內還提供多款如草莓夾心銅鑼燒等創意甜點，體現了品牌對食材純粹度的極致追求。無論是現場享用現做的冰沙，還是選購精緻的甜點禮盒，都能品味到甘王草莓最極致的鮮美，是天神地區必嚐的特色甜品。	https://youtu.be/JFrQM24tp-4?t=972	https://maps.app.goo.gl/PHs1JFvw3xJLcn2a7	
+芋屋金次郎	Imoya Kinjiro	美食餐廳	點心專賣店	炸番薯條專賣店、排隊人潮極多、現炸番薯條外皮酥脆、內部鬆軟、散發天然的甜味與油脂香氣	福岡天神	天神地下街	芋屋金次郎是一家專注於番薯藝術的傳統老鋪。這家店以現場油炸出的番薯條擄獲了無數饕客的心，那獨特的金黃色光澤與現炸出的溫熱香氣，總能在地下街引發大排長龍。番薯條保留了最純粹的根莖植物甜味，口感硬脆卻不乾澀，是一款老少咸宜、極具代表性的日式國民點心。對於想要尋找傳統日式風味零食的旅客，這裡絕對是不二之選。由於強調現炸的口感，熱騰騰的番薯條散發著天然的油脂香氣，展現了簡單食材中最迷人的純樸滋味。	https://youtu.be/JFrQM24tp-4?t=1021	https://maps.app.goo.gl/daS4HY52dsqkUbw9A	
+新天町商店街	Shintencho Shopping Arcade	購物採買	商店街	充滿昭和年代懷舊氛圍、特色時鐘塔、集結老字號店鋪、平價餐廳	福岡天神	天神站	新天町商店街與現代化的天神商圈形成了迷人的對比，這裡完整保留了昭和時期的建築韻味，漫步其中彷彿時光倒流。商店街內的時鐘塔是當地的精神象徵，會根據季節變換裝飾，定時響起的鐘聲與周邊的老字號店鋪交織出濃厚的在地生活感。這裡不僅有許多具有歷史價值的工藝品店，更有隱藏在巷弄間的平價美食，是感受福岡舊城區魅力與庶民文化的必經之地，展現出不同於百貨公司的傳統市場活力，非常適合喜愛深度文化探索的旅人。	https://youtu.be/JFrQM24tp-4?t=1058	https://maps.app.goo.gl/tZ4Lpk8rFMyXpVMv7	
+福岡大名 Garden City	Fukuoka Daimyo Garden City	人氣打卡	複合式商圈	新開幕複合式地標、超大草坪公共空間、熱門打卡雕塑、內含蔦屋書店、多家精品店	福岡天神	西鐵福岡(天神)站	福岡大名 Garden City 作為天神新地標，成功將舊學校遺址轉型為充滿綠意的都會客廳。其寬廣的戶外草坪與充滿設計感的建築外觀，是當地市民與遊客休憩的新寵，周圍環繞著多款熱門藝術雕塑。館內的蔦屋書店結合星巴克，營造出極佳的閱讀氛圍。此外，這裡也引進了如 Snow Peak 等頂級戶外品牌與多家高端精品，完美融合了自然、購物與文藝生活，展現出福岡作為創新城市的未來面貌，是天神地區提升生活品質的質感座標。	https://youtu.be/JFrQM24tp-4?t=1388	https://maps.app.goo.gl/YQWuQ8pAZLqWkssC6	
+Stockmart	Stockmart	美食餐廳	麵包選物店	明太子法國麵包專賣、現場回烤確保酥脆、醬料分量十足、辣度適中	福岡天神	天神西通	若要品嚐福岡靈魂美食「明太子法國麵包」，Stockmart 絕對是首選。店內選用高筋麵粉製作的法棍，氣孔分明且咬勁十足，搭配由自家調製、分量極具誠意的明太子醬，每一口都能感受到魚卵爆開的鹹香與微辣感。經過現場精準的回烤處理，微焦的外皮與濕潤的內餡交織出驚人的層次感，香氣四溢。這不僅是一條麵包，更是將在地飲食文化與職人烘焙技術完美結合的結晶，口感紮實且後韻十足，是許多食客來到天神地區指名購買的特色美味。	https://youtu.be/JFrQM24tp-4?t=1602	https://maps.app.goo.gl/ZjjknWWpnwXfReyu7	
+博多水炊き 濱田屋	Hakata Mizutaki Hamadaya	美食餐廳	水炊鍋餐廳	湯頭全雞燉煮鮮甜清爽、特色雞肉蓋飯、沾醬帶有柚子香氣、雞腿肉與脆雞皮	福岡博多	博多站	濱田屋完美詮釋了福岡歷史悠久的水炊鍋文化。其特製雞湯呈現乳白色卻清澈無負擔，每一口都能感受到雞肉最原始的甘醇。料理過程極其考究，從品嚐第一碗純湯到享用鮮嫩雞腿肉與特製雞肉丸，節奏分明，搭配帶有清新柚子香氣的沾醬更是絕配。特別推薦其雞肉蓋飯，碳烤雞腿肉的香氣與香脆雞皮為整場饗宴增添了多變的層次感。這是一道結合專業熬湯技術與優質食材的極致料理，溫暖且充滿深度，是來到福岡絕對不能錯過的必吃正宗美味。	https://youtu.be/JFrQM24tp-4?t=1941	https://maps.app.goo.gl/gJCPJzpiAPEDvifXA	2
+肥後市集	Higo Yokamon Market	購物採買	購物中心	熊本JR站內、大量熊本特產、馬肉製品、熊本熊週邊、多間拉麵店與餐廳	熊本	熊本車站	坐落於熊本 JR 車站內部的肥後市集，是旅客抵達後或離開前的終極購物據點。這座市集將熊本縣的特色精華濃縮於此，從知名的馬肉刺身、當地農產品到各式造型可愛的熊本熊限定商品應有盡有，品項極為豐富。市集內不僅是伴手禮的天堂，更規劃了多間深受在地人喜愛的食店與拉麵專區，讓旅人在轉乘新幹線之際，也能輕鬆品嚐到道地的熊本風味。其無與倫比的便利性與琳瑯滿目的物產種類，無疑是感受熊本物產豐盛的首選門戶，是每位造訪熊本的旅客必經之站。	https://youtu.be/w5LEbLOtG08?t=185s	https://maps.app.goo.gl/vxaQw9CCh5va6hwT9	
+SAKURA MACHI Kumamoto	SAKURA MACHI Kumamoto	購物採買	購物中心	熊本最新大型商場、4米高巨型熊本熊打卡點、頂樓屋頂庭園、地下美食街	熊本	櫻町巴士總站	這座現代化的大型購物中心是由舊巴士站改建而成，已成為熊本的地標性建築，集結了時尚服飾、生活百貨與各國美食。商場空間感開闊且設計感十足，最令人驚喜的是位於頂樓的空中花園，那裡矗立著一座高達四米的巨型熊本熊裝飾，是遊客必拍的場景。地下層的美食街則是挑選輕食與伴手禮的絕佳去處，環境整潔且引進了許多流行品牌。商場與巴士總站共構，讓旅客能在等候轉乘的空檔，享受高品質且一站式的休閒購物時光，是這座城市活力與便利的縮影。	https://youtu.be/w5LEbLOtG08?t=1113s	https://maps.app.goo.gl/qS5w1LCbpKraLeB76	
+熊本熊村	Kumamon Village	觀光名勝	禮品店	熊本熊限定商品、阿蘇火山泥磁鐵、公仔、部長粉絲必訪	熊本	SAKURA MACHI 2樓	熊本熊村是每位部長粉絲的必訪聖地，這裡充滿了讓人療癒感爆棚的各種熊本熊週邊。店鋪內規劃得井井有條，產品從實用的文具、布偶到富有創意設計的伴手禮應有盡有，特別是利用阿蘇火山泥為原料製成的特色磁鐵與擺件，兼具在地文化與收藏價值，深受國際遊客喜愛。這裡不僅是一間商店，更像是展示熊本熊魅力的微型文化空間，每一處細節都展現出熊本對吉祥物的熱愛。不論是想購買限定伴手禮，或是單純想在部隊長的環繞下拍照留念，這裡都能提供極佳的樂趣與購物體驗。	https://youtu.be/w5LEbLOtG08?t=1183s	https://maps.app.goo.gl/XeXZgTqR6jdK8ppQ9	2
+熊本下通商店街	Shimotori Shopping Arcade	購物採買	商店街	熊本規模最大商店街、透明遮雨棚、藥妝店、遊戲中心、時裝店與餐廳	熊本	通町筋站	熊本下通商店街展現了這座城市最蓬勃的商業生命力。這條長達數百公尺的拱廊街道，以其明亮寬敞且不畏風雨的特性，成為在地人與遊客聚集的中心。街道兩側分佈著各大知名藥妝品牌、充滿趣味的夾娃娃機中心以及琳瑯滿目的在地餐飲。漫步其中，可以感受到一種慢節奏的繁華，相較於大城市的擁擠，下通多了幾分舒適感與親切感。不論是想要深度挖掘日系美妝，或是尋找隱藏在巷弄中的居酒屋美味，下通商店街總能滿足你對城市漫遊的所有渴望，是熊本購物與娛樂的靈魂樞紐。	https://youtu.be/w5LEbLOtG08?t=1373s	https://maps.app.goo.gl/NWYnoPRuNr3is9oG7	
+鳴門鯛燒本舖	Naruto Taiyaki Honpo	美食餐廳	鯛魚燒店	傳統一丁燒工法、推薦番薯與紅豆餡、外皮酥脆帶炭火香氣、餡料綿密	熊本	下通商店街內	鳴門鯛燒本舖始終堅持使用獨立模具手烤的「一丁燒」古法。這種職人精神保證了鯛魚燒外皮的極致酥脆與薄透感，與一般批量生產的口感截然不同。咬開帶有些微炭火香氣的外皮，溫潤綿密的番薯餡或香氣撲鼻的紅豆餡瞬間溢出，甜度適中且食材原味保留完整。熱騰騰的鯛魚燒在口中展現出多層次的風味與溫暖的手作質感，非常適合在漫步商店街的午後作為隨手小食。這不僅是一份甜點，更是一次對日本傳統街頭食文化的深刻體驗，讓人感受到簡單食材中的純粹與匠心。	https://youtu.be/w5LEbLOtG08?t=1444s	https://maps.app.goo.gl/2DQzvfeVV4KjWN7s9	
+壽司仙八	Sushi Senpachi	美食餐廳	壽司店	2025年百名店、主打Omakase廚師發辦、特色柚子調味白魚、煙燻風味刺身、午間套餐高性價比	福岡藥院 / 六本松	藥院大通站	榮獲 2025 年百名店肯定的壽司仙八，以其細膩的 Omakase 體驗在藥院地區大放異彩。店內氛圍輕鬆優雅，師傅對食材處理極具巧思，特別是將清新的柚子香氣與旬鮮海產結合，激發出白肉魚刺身深層的甜感。套餐包含多道驚艷料理，如帶有強烈煙燻氣息的特製魚肉以及鮮度爆棚的紫海膽壽司。對於追求高品質日料且希望預算友善的旅客，這裡的午間套餐提供了極高的情緒價值與味覺享受，以精緻的工法展現了職人對每貫壽司的極致追求，是福岡壽司地圖上不可忽視的座標。	https://youtu.be/xEejvcD0DDk?t=152s	https://maps.app.goo.gl/Xd81Q8PTdgxzZESW6	
+Cafe Del Sol	Cafe Del Sol	美食餐廳	咖啡廳	超人氣舒芙蕾鬆餅、Tiramisu提拉米蘇口味、季節限定水蜜桃、低消飲品	福岡天神	大名商圈	Cafe Del Sol 以其如雲朵般蓬鬆、入口即化的舒芙蕾鬆餅聞名於天神大名區。店內招牌 Tiramisu 鬆餅結合了義式濃縮咖啡的醇苦與香濃鮮奶油的甜美，營造出豐富的層次感；而季節限定的水蜜桃口味則選用在地新鮮果實，展現清新自然且多汁的甜味。裝修風格溫暖柔和，是繁華商圈中稍作休憩的理想之選。店內規定每位訪客需點一份飲品，確保了高品質的用餐環境，讓人能在舒緩的節奏中享受精緻甜點帶來的味覺盛宴，是福岡甜點地圖中的必訪朝聖點，體現了精品咖啡廳的精緻與優雅。	https://youtu.be/xEejvcD0DDk?t=1004s	https://maps.app.goo.gl/oYeaHbkdFq9NVRwk8	2
+HUMAN MADE	HUMAN MADE	購物採買	服飾店	潮流教父Nigo創立、排隊人氣極高、經典愛心標誌服飾、潮流雜貨品項齊全	福岡天神	天神西通	位於天神核心地段的 HUMAN MADE 是潮流信徒必訪的聖地。由潮流教父 Nigo 親手打造的空間充滿玩心與復古美學，處處可見其最具代表性的愛心標誌與動物圖騰。店內陳列了最新的聯名單品、街頭感十足的 T-shirt、夾克以及極具收藏價值的特色雜貨小物。由於品牌人氣居高不下，造訪時往往需要預留時間排隊進場。這裡不僅是一間時裝店，更是一種東京街頭時尚態度的延伸。對於追求獨特個人風格與日本潮流文化的遊客來說，能在此入手幾件限定單品，絕對是來到福岡購物之旅中最令人興奮的戰利品收穫。	https://youtu.be/xEejvcD0DDk?t=1223s	https://maps.app.goo.gl/Cvoin8BGbfvvKPTv5	
+CAITAC SQUARE GARDEN	CAITAC SQUARE GARDEN	購物採買	購物商場	2025最新複合型商場、Snow Peak旗艦店進駐、高科技機器狗互動、高級影院	福岡天神	天神西通	CAITAC SQUARE GARDEN 代表了福岡最尖端的複合型商場設計，內部空間開闊且質感高雅，將綠意與現代建築完美融合。這裡不僅進駐了 Snow Peak 等戶外高端品牌與眾多質感服飾選物店，更設有舒適的精品影院。商場最大的亮點莫過於能在四樓與擬真感極強的高科技寵物機器狗互動，充滿趣味與未來感。不同於一般百貨公司的擁擠感，這裡提供了一種從容優雅的慢活購物體驗。無論是想尋找高品質的日本生活工藝品，還是在屋頂庭園享受寧靜時光，這座現代化商圈都為福岡之旅注入了精緻的新動能，展現了都會生活的全新高度。	https://youtu.be/xEejvcD0DDk?t=1323s	https://maps.app.goo.gl/ndjK3kHbRkxTREnKA	
+大賀藥妝店	Ohga Drug Store	購物採買	藥妝店	天神地下街位置便利、高品質日本製眼藥水、價格親民且品項齊全、動線流暢	福岡天神	天神地下街	坐落於天神地下街優越交通位置的大賀藥妝店，是以高效率與購物舒適感著稱的連鎖藥妝店。店內空間相較於一般鬧區分店更為寬敞明亮，產品陳列一目了然。特別推薦其豐富的日本製眼藥水系列與常用醫藥品，不僅種類齊全且針對遊客常備藥有極具競爭力的定價。位置緊鄰地鐵站與多個商場交會點，讓人在漫步地下街的途中能輕鬆完成免稅補給。這裡提供了專業的選品與流暢的動線，讓行程緊湊的旅人能以最短時間買齊高品質日系生活必需品，是天神商圈中在地人也頻繁造訪的實惠購物首選。	https://youtu.be/xEejvcD0DDk?t=1503s	https://maps.app.goo.gl/qAGWHH9HvcxM5yt38	
+唐吉訶德	Don Quijote	購物採買	折扣店	24小時營業旗艦店、美妝保養專區規模極大、吉伊卡哇聯名隱形眼鏡、免稅便利	福岡天神	天神西通	唐吉訶德天神本店是福岡市區內永不熄燈的購物殿堂。這間旗艦店規模宏大，從地下層到高樓層涵蓋了生活雜貨、家電、名牌精品及海量零食，品項跨度極大。此處的美妝專區規模位居全市前茅，甚至能發現如「吉伊卡哇」等超人氣聯名隱形眼鏡。由於 24 小時營業的特性，非常適合作為行程結束前最後一站的補給點。旅客可以在此一次性買齊所有日本伴手禮，並在專屬櫃檯快速辦理免稅手續，享受如同尋寶般的購物快感。無論是深夜突發的購買欲或是最後一刻的補貨，這間分店都能提供全方位的便利與驚喜。	https://youtu.be/fxAJJ-tmCtM?t=1403s	https://maps.app.goo.gl/y2aeCFJKR3zn5bpn9	
+燒鳥之八兵衛	Yakitori no Hachibei	美食餐廳	居酒屋	炭火串燒、必點芝士串燒與煙 bacon 蝦捲、肉質飽滿火候精準、深夜食堂首選	福岡博多	博多站	這間隱身於博多站附近的燒鳥居酒屋，以其精湛的炭火烤製技術獲得極佳評價。店內氛圍熱烈且充滿道地日本下班後的社交氣息，特別推薦其「芝士串燒」與「煙肉蝦捲」，後者將脆嫩鮮蝦包裹在鹹香煙肉中，火候掌握得恰到好處，油脂與焦香平衡。不同於一般連鎖店，這裡的串燒肉質飽滿且風味濃郁，每一口都能感受到職人對熟度的堅持。這裡是體驗福岡道地深夜食堂文化、與好友舉杯共度微醺之夜的理想場所，展現了福岡居酒屋文化中精緻與熱情的雙重特質，強烈建議提前訂位以感受這份隱藏版的美食驚喜。	https://youtu.be/fxAJJ-tmCtM?t=1530s	https://maps.app.goo.gl/NFvvjytKETTDcJ7R8	2
+THREEPPY	THREEPPY	購物採買	生活雜貨	Daiso旗下300日圓設計品牌、精緻風格、深受女性顧客青睞、高CP值質感雜貨	福岡博多	博多巴士總站	THREEPPY 以「300日圓打造精緻生活」為核心理念，在平價雜貨市場中開闢出一片充滿美學的空間。產品色調柔和，充滿了流行的北歐風格與日系小清新質感，從精緻花紋餐具、質感織品到少女心裝飾小物一應俱全。這裡深受女性旅客喜愛，主因在於商品雖保持親民價位，但在細節設計上卻展現了不凡的藝術氣息與實用性。對於追求居家儀式感，或是想為親友挑選一份精美大方的伴手禮的旅人來說，THREEPPY 提供了一個兼顧荷包與品味的絕佳購物場所，讓平凡的生活備品也能充滿設計的溫度。	https://youtu.be/-ayNS6n7nuQ?t=424s	https://maps.app.goo.gl/JoRxv5YSx94XPU6z9	
+Standard Products	Standard Products	購物採買	生活雜貨	Daiso旗下簡約風格副牌、高品質北歐設計感、強調環保美學、質感顯著提升	福岡博多	博多巴士總站	Standard Products 是 Daiso 集團中專攻簡約美學的高端線，其店面裝修呈現出沉穩的灰色與莫蘭迪色系，深受追求低調質感的消費者喜愛。選品強調「標準化」與「高品質」，從日本工匠打造的餐具、環保材質收納箱到現代感居家香氛應有盡有，產品品質較一般百圓店有顯著提升。這種融合了現代美學與環保意識的購物環境，展現了一種不過度裝飾、強調物料本質的生活態度。這裡讓人在尋找實用居家備品的同時，也能深刻體會到日本當代精緻的生活機能設計，是注重生活品質與簡約風格旅人的必逛之選。	https://youtu.be/-ayNS6n7nuQ?t=454s	https://maps.app.goo.gl/76TW4RQGfzXnPbrB7	
+LA SOEUR	LA SOEUR	美食餐廳	可麗露專賣店	提供多款特殊風味可麗露、抹茶、伯爵茶、檸檬等、外皮焦香脆口、內餡軟糯、檸檬味清爽平衡、伯爵茶味香氣濃郁、需解凍享用	福岡博多	博多車站1樓	位於博多車站一樓的這間可麗露專賣店 LA SOEUR，是許多甜點控在轉乘空檔必訪的甜蜜據點。店內販售的可麗露以極致的外焦內軟口感著稱，特別是其多樣化的風味選擇令人驚艷。影片中重點推薦了檸檬口味，其酸甜適中的層次感完美中和了焦糖的厚重；而伯爵茶口味則展現了極致的茶香回甘，每一口都能感受到茶葉的清新芬芳。雖然部分商品需要解凍後方能品嚐到最佳質地，但那種咬下時酥脆的外殼與中心如卡士達般軟糯的對比，無疑是博多街頭最迷人的散策點心之一，無論是自己品嚐或是作為精緻伴手禮都非常合適。	https://youtu.be/-ayNS6n7nuQ?t=476s	https://maps.app.goo.gl/ZuoVqEHxgNg6fNh66	
+PLAZA	PLAZA	購物採買	生活雜貨店	位於Solaria Stage 4樓、美妝產品極致豐富且陳列舒適、設有大量卡通週邊與日系特色零食、環境開闊方便瀏覽	福岡天神	Solaria Stage	PLAZA 天神店是掌握日本流行美妝脈動的首選站點，其位於 Solaria Stage 四樓的開闊空間讓購物過程毫無壓迫感。這裡集結了最新上市的日系彩妝、專業保養品以及來自各國的人氣小物。影片特別指出，這裡的陳列設計讓旅客能一目了然地尋獲所需，不必在擁擠的藥妝店中穿梭。除了美妝，店內豐富的卡通 IP 週邊與創意零食區也是一大亮點，常能發現與知名插畫家聯名的限定商品。對於追求潮流資訊與高品質購物環境的女性旅客，這裡不僅是補給美妝品的寶庫，更是一個充滿探索樂趣的時尚森林，展現了福岡都會生活的精緻與活力。	https://youtu.be/-ayNS6n7nuQ?t=556s	https://maps.app.goo.gl/Uw84DCpLWrXaBXoA7	
+萬代官方扭蛋店	Gashapon Bandai Official Shop	主題體驗	扭蛋專門店	位於地下1樓、擁有超過2200部扭蛋機、包含Bandai官方專區、是博多站附近規模最大的扭蛋集合地	福岡博多	博多巴士總站B1	博多巴士總站地下一樓是扭蛋愛好者的夢幻天堂，這裡密密麻麻地擺放了超過 2200 部扭蛋機，規模之大令人震撼。無論是熱門動漫 IP、名偵探柯南週邊，還是獵奇的生活小物與動物造型應有盡有。影片特別推薦這裡作為博多站購物行程的必經站，不僅機器數量驚人，更因其位於交通樞紐的便利性，讓旅人能輕鬆尋得日本最新上市的限定蛋款。無論是大人想重溫童心還是為孩子挑選精緻小物，這片斑斕的扭蛋森林都能讓人流連忘返，享受指尖轉動出的驚喜快感，是來到博多時絕佳的室內娛樂據點。	https://youtu.be/vgeE4qtstwU?t=39s	https://maps.app.goo.gl/12UsBiT38qRMD15q7	
+Hands	Hands Hakata	購物採買	生活雜貨店	位於博多車站商場內、橫跨1至5層、主打機能性背囊、旅遊配件、各類生活雜貨及創意掛鉤	福岡博多	JR博多城	位處 JR 博多城核心地帶的 Hands，是追求高品質生活與機能美學旅人的必訪之地。商場不僅匯集了專業職人背囊品牌與商務工作包，更針對攝影愛好者與文字工作者提供了豐富的旅遊配件選擇。影片中特別提到，這裡的選物極具巧思，連背囊專用的負重掛鉤等細節小物都一應俱全，能滿足各種精細的旅遊生活需求。Hands 展現了日本設計如何優化日常生活的質感，是全方位補給旅遊裝備與發現日系創意道具的最佳站點，不論是實用的機能用品還是充滿設計感的小物，都能在此一站購齊。	https://youtu.be/vgeE4qtstwU?t=153s	https://maps.app.goo.gl/8dGTnGs1fuPzywbK9	
+努努雞	Nunu-Kan	購物採買	炸雞專賣店	福岡傳奇名物「冷食炸雞」、標榜不需加熱、冷凍狀態取出直接享用口感最佳、醬汁甜辣且帶芝麻香、不定期補貨	福岡博多	博多車站內	努努雞徹底顛覆了炸雞必須趁熱吃的常識，是福岡極具代表性的「冷食炸雞」品牌。這款產品主打從冷凍庫取出後直接享用，在冰涼狀態下最能突顯醬汁的甜辣風味與酥脆質感。影片紀錄了在博多站驚喜買到努努雞的瞬間，其濃郁的調味包裹著芝麻香氣，口感紮實且極其適合搭配冰涼飲料。由於其極高的人氣與不定期補貨的特性，常讓許多旅客空手而歸，是來到福岡車站必須碰運氣尋找的指標性美食。其獨特的「逆轉溫度」吃法不僅是味覺的挑戰，更是這座城市最具話題性的手信選擇，值得每一位美食探險家一試。	https://youtu.be/vgeE4qtstwU?t=725s	https://maps.app.goo.gl/8ey1U8pJhNaJ2Wq16	
+寶可夢中心 福岡	Pokemon Center Fukuoka	購物採買	動漫週邊專賣店	位於AMU PLAZA 8樓、販售大量限定公仔、扭蛋、徽章與皮卡丘週邊、適合粉絲尋找九州限定款式	福岡博多	AMU PLAZA 8樓	位於 AMU PLAZA 8 樓的 Pokemon Center 是所有寶可夢訓練師在九州的朝聖中心。店內充滿了琳瑯滿目的角色商品，從最受歡迎的皮卡丘大型玩偶到各式精緻的徽章與扭蛋應有盡有，甚至能在此發現極具地方特色的九州限定款式。影片紀錄了最後衝刺採買的歡樂氛圍，這裡不僅是孩子的遊戲天堂，也是成年粉絲尋找童年回憶與精緻文創品的寶庫。寬敞的購物環境與充滿活力的裝飾，讓旅客在挑選伴手禮的同時也能感受到寶可夢世界的奇幻魅力，無論是收藏家還是想挑選禮物的旅人，都能在此獲得極大的滿足感。	https://youtu.be/IJhQ8hIU4y8?si=rIPin-H_ATBzoUuJ	https://maps.app.goo.gl/w5iwfkXRRKqbvBQz7	
+WHITE GLASS COFFEE	WHITE GLASS COFFEE	美食餐廳	咖啡廳	網紅玻璃屋咖啡廳、森林系裝修、必點 Roast Beef Lunch、環境療癒舒心	福岡天神	櫛田神社前站	WHITE GLASS COFFEE 是福岡天神區極具人氣的網紅咖啡廳，以其極具設計感的全透明玻璃屋與充滿綠意的森林系風格聞名。店內採光極佳，讓訪客即便在室內也能享受被自然光籠罩的療癒感。其招牌的烤牛肉午餐（Roast Beef Lunch）不僅視覺吸引力十足，肉質的鮮嫩度與特製醬汁的搭配也備受讚賞。雖然熱門時段常需排隊，但其獨特的空間美學與優質餐點絕對值得專程造訪。這裡不僅是攝影者的天堂，更是喧囂市中心內一處難得的寧靜綠洲，讓人能徹底放鬆身心享受一杯高品質的鮮烘咖啡與美味佳餚。	https://youtu.be/8g4QIJBOhqQ?t=673	https://maps.app.goo.gl/DXwdFnG2ks8jPTaJ7	
+One Fukuoka Building	One Fukuoka Building	人氣打卡	複合式商場	2026福岡新地標、天神中心複合商場、藝術與商業結合、地下街直通、全日最大 Chanel 店	福岡天神	天神地下街直通	One Fukuoka Building 是福岡天神區域最受注目的新地標，是一座集結購物、餐飲、辦公與藝術於一體的超大型複合建築。商場與天神地下街直接連通，館內進駐了包含全日本最大的 Chanel 店面等多個重量級奢華品牌。整體設計融入了許多在地藝術家的創意，將福岡的自然與都市感完美融合。空間感宏偉且具備前衛的現代設計感，不僅提供了頂級的購物體驗，更成為天神地區提升生活美學的中心。預期這裡將成為遊客到訪福岡時必拍、必逛的時尚潮流核心，展現出這座城市邁向未來的嶄新面貌。	https://youtu.be/8g4QIJBOhqQ?t=805	https://maps.app.goo.gl/tRyjjQgQUdZsdgP19	
+TSUTAYA BOOKSTORE / SHARE LOUNGE	TSUTAYA BOOKSTORE / SHARE LOUNGE	人氣打卡	書店與共享空間	結合書店與共享空間、收費包含飲料點心、提供私人休息空間、文創氛圍濃厚	福岡天神	One Fukuoka 4樓	這是一處結合了 TSUTAYA 書店與 SHARE LOUNGE 的創新文化空間。旅客只需支付合理的時薪費用，即可在寬敞且極具設計美感的環境中，無限制地享受免費的高級飲品與多樣化小食。這裡特別規劃了半開放式的私人座席與舒適的沙發區，不論是需要遠端辦公、處理公務，或是單純想在喧囂的市中心找尋安靜的閱讀角落，這裡都是非常完美的選擇。其濃郁的文創氛圍與高品質的設施，讓這裡成為天神區最具質感的生活美學據點，提供了一種結合知識探索與身心休憩的全新都會休閒模式，深受質感旅人青睞。	https://youtu.be/8g4QIJBOhqQ?t=1180	https://maps.app.goo.gl/Cs32Uws51W8Qy79YA	
+もつ幸	Motsu-ko	美食餐廳	腸鍋餐廳	福岡排名前三腸鍋名店、獨家餃子皮覆蓋煮法、四種特製湯底（醋醬油最推薦）、最後必加強棒麵收尾	福岡博多	吳服町站	這是一間連在地人都極力推薦的福岡腸鍋老字號，以獨特的烹飪方式與自成一格的湯底聞名。店內最受歡迎的吃法是在堆滿鮮甜蔬菜與彈牙牛腸的鍋面鋪上厚厚的餃子皮，待悶煮入味後，餃子皮吸收了澱粉與油脂的香氣，口感極其滑順誘人。湯底部分除了傳統味噌，店家特製的醋醬油更是神來之筆，能完美中和牛腸的膩感，讓味道層次更加鮮明爽口。最後務必加入強棒麵（Champon）吸收濃縮了蔬菜與肉質精華的湯頭作為收尾。這份極致的美味不僅是福岡飲食文化的縮影，更是來到九州絕對不能錯過的究極味覺饗宴。	https://youtu.be/VeXHlOR5NYk?t=103	https://maps.app.goo.gl/r8cXAe6ugRjiwu6K9	3
+新三浦	Shin Miura	美食餐廳	水炊鍋餐廳	米其林推薦鮮雞水炊鍋、乳白色濃郁雞湯、嚴謹四段式吃法、特製洋蔥雞肉丸子	福岡博多	博多站周邊	新三浦是福岡水炊鍋（Mizutaki）的指標性名店，憑藉其歷史傳承與高品質食材獲得米其林推薦殊榮。這裡的雞湯呈現誘人的乳白色，濃稠且充滿膠質，每一口都蘊含全雞熬煮出的天然鮮甜。店內遵循專業的四段式品嚐流程：先由服務員盛上一小杯原味雞湯暖胃，接著品嚐鮮嫩的雞肉塊，隨後是職人現場手工製作、混合了清甜洋蔥的彈牙雞肉丸子，最後則是吸收所有湯底精華後的雜炊。整場服務流程流暢且專業，確保食客能在最佳時機享用不同階段的鮮度。對於追求深度美食與精緻湯頭的旅客而言，這裡是必訪的殿堂級餐飲空間。	https://youtu.be/VeXHlOR5NYk?t=340	https://maps.app.goo.gl/7Coz1AsJfnAvr2CX9	3
+燒鳥 誠	Yakitori Makoto	美食餐廳	燒鳥居酒屋	福岡燒鳥得獎新星、需提前兩月預約、夢幻雞皮與雞屁股、特色雞油烤飯糰	福岡天神	赤坂站	作為福岡燒鳥界的當紅炸子雞，「燒鳥 誠」憑藉著卓越的火候控制與優質雞種，在當地美食圈聲名大噪。店內採嚴格的全預約制，一位難求。其 Omakase 套餐中的雞皮堪稱一絕，口感酥脆如北京烤鴨且帶有迷人炭香；爆汁的雞屁股與柔嫩多汁的雞肝更是令人驚艷。主食部分的雞油烤飯糰，搭配生蛋黃攪拌食用，焦香與濃郁蛋液交織，為整場盛宴畫下完美句點。餐廳環境高雅且具備精品感，並主動提供翻譯機輔助溝通，展現了對外國旅客的友善態度，是追求極致燒鳥體驗、感受職人精神的首選聖地。	https://youtu.be/VeXHlOR5NYk?t=647	https://maps.app.goo.gl/xvi3n5RBpSqPaUEh8	
+爐端 ノいとおかし	Robata Noitokashi	美食餐廳	炭火定食餐廳	完全預約制、限時50分鐘、炭火現烤定食、銀鮭/鰻魚雙選、精緻日式早餐	福岡藥院 / 六本松	六本松站	這是一間座落於六本松站附近的超人氣炭火定食專門店，其獨特的完全預約制與限時 50 分鐘的用餐規則，不僅提升了翻桌效率，更增添了其獨特的儀式感。店內僅提供銀鮭與鰻魚兩款精選定食，每一份鮮魚皆由職人在炭火爐前精準掌控火候烤製，呈現出極致的職人精神。銀鮭肉質肥美且油脂分佈均勻，搭配清新解膩的柚子胡椒，完美平衡了味蕾體驗；鰻魚則充滿誘人的碳燒香氣，質地軟嫩入口即化。這裡不僅僅是一份早餐，更是一場關於日式家庭溫暖與精緻食材的深度對話，是追求極致味覺享受的旅客在福岡行程中絕對不能錯過的美味起點。	https://youtu.be/v1wX7KCGQz4?t=51	https://maps.app.goo.gl/cy2gSTTfhyZPULWUA	
+SOLARIA PLAZA	SOLARIA PLAZA	購物採買	時尚購物中心	日系潮流品牌、女裝重心、Majestic+Legon、生活雜貨、交通樞紐	福岡天神	西鐵福岡站出口	作為福岡天神商圈核心地帶的時尚風向球，Solaria Plaza 以其豐富多元的日系品牌進駐與極具活力的購物氛圍，成為女性旅客的夢想天堂。商場集合了 Majestic Legon、Lowrys Farm 等深受大眾喜愛的潮流品牌，更經常推出令人驚喜的跨界聯名系列，展現出高度的流行敏銳度。商場內部空間規劃寬敞且動線流暢，與地鐵站直接相連的地理優勢讓購物體驗更顯輕鬆便利。對於想要一次掌握當季日本流行趨勢、採買多樣化風格服飾或精緻生活雜貨的旅客來說，這座商場無疑是天神區最高效率且最具指標性的時尚購物基地。	https://youtu.be/v1wX7KCGQz4?t=187	https://maps.app.goo.gl/YwCFS4pbEKnzfCse8	
+葫蘆壽司	Hyotan Sushi	美食餐廳	壽司餐廳	福岡性價比之王、排隊名店、特選壽司套餐、新鮮生蠔活蝦、在地推薦	福岡天神	Solaria Stage 2樓	隱身於 Solaria Stage 內的葫蘆壽司，憑藉其無與倫比的食材鮮度與極高性價比，成為福岡天神區公認的殿堂級排隊名店。儘管排隊人潮總是絡繹不絕，但當那盤裝載著肥美海膽、現剖生蠔與鮮甜活蝦的壽司上桌時，所有的等待都轉化為味蕾上的感動。推薦嘗試其特選壽司套餐，每件壽司都完美體現了當季海鮮的最鮮活狀態，肉質豐厚且層次分明。店內氣氛熱絡，充滿傳統壽司屋的生氣與職人情懷。師傅純熟的技藝與極其合理的定價，使其在競爭激烈的福岡美食界中屹立不搖，是每位拜訪天神的食客清單中的絕對必吃之選。	https://youtu.be/v1wX7KCGQz4?t=638	https://maps.app.goo.gl/AN4C5rhkUgqESmNW9	2
+Mister Donut	Mister Donut	美食餐廳	甜甜圈店	位於車站地下層、豐富的口味選擇、平價午茶首選、交通轉乘點	福岡博多	博多車站地下	位於博多車站地下層的 Mister Donut，以其穩定的高品質與多樣化的口味，成為旅客在繁雜車站中尋找平價甜食的最佳去處。店內提供多款經典甜甜圈，無論是招牌的 Q 彈波堤系列還是期間限定的季節特色商品，都能滿足不同愛好者的味蕾。其地理位置極其優越，非常適合在搭乘地鐵或 JR 列車前快速採買，或是作為漫長旅途中的體力補給。這種深植於日本日常生活的平民甜點，不僅價格親民，其親切的服務與熟悉的味道，也為忙碌的通勤與轉乘行程增添了一份溫馨的甜蜜感，是車站商圈內極具親和力的餐飲選擇。	https://youtu.be/0MezyntxeMY?t=179	https://maps.app.goo.gl/Ni3N8pENE5sYVrbi7	
+Forno del MIGNON	Forno del MIGNON	美食餐廳	牛角麵包專賣店	不同於主店的口感、外皮層次分明、適合快速取餐、多樣化選擇	福岡博多	Mister Donut對面	位於博多車站地下美食區的這間 MIGNON 分店，呈現出與地面層主店微小的風格差異與驚喜口感。這裡提供的牛角麵包在製作工藝上更顯輕盈，外層烤製得極其酥脆且層次分明，包裹著充滿奶油香氣的麵糰，與主店相比更有其獨特的滋味。對於想要多方嘗試博多知名牛角麵包的旅客來說，這裡提供了更豐富的風味選擇。由於位置相對隱蔽，排隊人潮往往較主店少，是探索博多車站地下美食街時值得納入清單的秘密基地。熱騰騰的迷你牛角麵包無論是現買現吃還是作為散策點心，都能讓人感受到福岡街頭最地道的烘焙幸福感。	https://youtu.be/0MezyntxeMY?t=183	https://maps.app.goo.gl/S76RBZW7DeHmkSaM9	
+西新 初喜	Nishishin Hatsuki	美食餐廳	壽喜燒餐廳	頂級黑毛和牛、專業職人桌邊代煮、獨立包廂設計、壽喜燒頂級體驗	福岡博多	AMU PLAZA 10樓	坐落於 JR 博多城 AMU PLAZA 頂樓美食區，「西新 初喜」提供了福岡最正統且高品質的壽喜燒盛宴。餐廳嚴選頂級黑毛和牛，肉質纖維細膩且油脂如大理石紋般均勻分佈，入口即化的質地令人驚艷。為了確保食材呈現最佳風味，全程由專業服務人員在桌邊精準掌控火候與醬汁比例，將鮮嫩和牛沾裹上濃郁生蛋液，展現出極致的鹹甜層次感。寬敞的獨立包廂設計提供了極佳的私隱性與尊榮感，不論是商務宴請或是家庭慶祝，這裡都能提供完美的日式服務體驗。這是旅客在博多想要享受奢華、精緻晚餐的不二之選。	https://youtu.be/0MezyntxeMY?t=466	https://maps.app.goo.gl/pei6PfWv7ZPgsLbAA	2
+佐賀焱壽燒肉	Yakiniku Enju	美食餐廳	燒肉店	頂級佐賀牛、極致性價比、入口即化口感、包廂式用餐環境、純電話預約制	佐賀	佐賀站	來到佐賀，朝聖頂級佐賀牛絕對是老饕的首選，而焱壽則以其極致的性價比在燒肉界佔有一席之地。餐廳提供的佐賀牛油脂分佈如大理石紋般均勻，在高溫炭火的洗禮下，油脂迅速轉化為迷人的焦香，入口即化的口感完全不負其頂級和牛之名。除了名聲顯赫的牛肉，套餐內豐富的海鮮與產地直送的蔬菜，更為這場味覺饗宴增添了層次感。店內採溫馨的日式包廂設計，讓旅客能優雅地享受這份尊榮感。由於店內人氣爆棚且堅持職人服務，強烈建議出發前透過郵件或請飯店人員代為電話預約，以免錯失這場足以令靈魂顫動的佐賀牛之旅。	https://youtu.be/8RCbgChtAaU?t=543	https://maps.app.goo.gl/fTeS6HMpPoFKDUUz5	
+豪斯登堡	Huis Ten Bosch	主題體驗	主題樂園	1:1荷蘭城鎮復刻、1300萬盞光之王國、Miffy主題聖地、浪漫運河風車、日本面積最大樂園	長崎	JR 豪斯登堡站	豪斯登堡是一座將 17 世紀荷蘭風情完美移植到長崎縣的主題樂園，其壯闊的運河系統、巨大的風車與古樸的歐式建築，讓人彷彿瞬間穿越至中古歐洲。作為日本面積最大的度假區，這裡不僅有刺激的機動遊戲，更有著舉世聞名的「光之王國」夜間點燈，1300 萬盞燈光構成的璀璨銀河絕對是視覺上的極致震撼。對於 Miffy 粉絲而言，這裡更是全球唯一的專屬朝聖地，各類精緻周邊與主題活動令人愛不釋手。無論是漫步在繽紛的花卉街道，還是乘坐貢多拉船穿越童話般的港口城，豪斯登堡都能以其細膩的造景與夢幻的氛圍，為家庭或情侶提供一場永生難忘的浪漫避世之旅。	https://youtu.be/8RCbgChtAaU?t=946	https://maps.app.goo.gl/ytsWmZkU5KwMngwp6	
+三層樓旋轉木馬	Sky Carousel	人氣打卡	旋轉木馬	全球首座三層旋轉木馬、空中咖啡雅座、夕陽金紅美景、發光珠寶盒夜景	長崎	港口城運河旁	Sky Carousel 是豪斯登堡內最令人心動的奇蹟建築，作為全球首座高達三層的旋轉木馬，它不僅是一項遊樂設施，更是一座旋轉的夢幻瞭望台。最受好評的體驗是位於頂層的咖啡雅座，遊客可以端著熱騰騰的咖啡，隨著優美的樂章在空中緩緩旋轉，從前所未有的視角飽覽整座歐式小鎮與波光粼粼的運河。在黃昏時分造訪，眼前的建築會被落日染成瑰麗的金紅色，景象之美常令旅客眼眶濕潤。入夜後，木馬被無數金黃燈火點亮，宛如夜空中的旋轉星盤，其極致的浪漫氛圍使其成為全日本最具話題性的打卡聖地。	https://youtu.be/8RCbgChtAaU?t=1191	https://maps.app.goo.gl/Vbxeg7gY9ZqdqAMN7	
+Fuglen Fukuoka	Fuglen Fukuoka	美食餐廳	咖啡廳	挪威精品咖啡、北歐風格裝潢、早晚咖啡與酒吧雙重身分、近博多站	福岡博多	博多站	來自挪威奧斯陸的 Fuglen 咖啡，繼東京澀谷後在博多開設了全日第二間海外分店。這裡不僅提供高品質的淺焙咖啡，其極具設計感的北歐家具與通透的落地窗空間，更讓旅客在繁忙的行程中找到一絲寧靜。早上是充滿咖啡香的休憩地，晚上則搖身一變成為極具氛圍的雞尾酒吧。店內的輕食麵包口感偏硬且充滿嚼勁，非常適合喜愛紮實歐式麵包的食客。雖然距離博多車站僅幾步之遙，卻能讓人瞬間抽離喧囂，是開啟福岡旅行最優雅的起點，每一杯咖啡都承載著北歐極簡與精緻的生活美學。	https://youtu.be/FkjDPYabFtY?t=30	https://maps.app.goo.gl/BVmhKwfvS8LHK7so7	
+博多シーフードうお田	Hakata seafood Uoden	美食餐廳	明太子專賣店	必吃明太子料理、辣味鹹香適中、新店面風景優美、人氣排隊名店	福岡中洲	中洲屋台街附近	作為福岡第一間明太子專賣店，這裡提供最道地的明太子體驗。招牌料理結合了玉子燒、鮭魚卵與整條特製明太子，配上粒粒分明的白飯，口感層次極其豐富且鹹辣適中。餐廳近期遷至新址，用餐環境更為開闊且風景更佳。由於是極受歡迎的網紅名店，強烈建議預先訂位或避開尖峰用餐時段，以免長時間排隊。對於初次造訪福岡的旅客來說，這份獨特的明太子饗宴是絕對不能錯過的經典美味。	https://youtu.be/nZam6eLh_6w?t=493	https://maps.app.goo.gl/FQm9v2JwJshcqMao8	3
+櫛田神社	Kushida Shrine	觀光名勝	神社	博多總鎮守、求商賣繁榮與長壽、必摸靈牛添福氣、壯觀山笠展示	福岡博多	川端商店街旁	櫛田神社被博多居民暱稱為「櫛田桑」，是當地最重要的守護神殿，保佑著商業繁榮與長壽。境內最吸引目光的是壯觀的「櫛田山笠」常設展示，讓遊客近距離感受博多祇園山笠祭的震撼。此外，神社內有一尊被磨得發亮的「靈牛」石像，據說摸牛頭能增長智慧、摸牛身能保佑健康。神社氣氛肅穆且莊嚴，並與隔壁百年的川端商店街相通，是非常適合安排在行程中體驗福岡深厚歷史底蘊的第一站。	https://youtu.be/nZam6eLh_6w?t=1300	https://maps.app.goo.gl/oW6qe1jTBVWCa7Pt6	
+川端商店街	Kawabata Shotengai	購物採買	商店街	超過百年歷史、150間店舖、便宜藥妝與生鮮、必吃烤麻吉紅豆湯	福岡博多	櫛田神社旁	這條長約 400 公尺的商店街是博多最古老的商業街道，擁有超過 150 間傳統與現代交織的店舖。這裡的氛圍極具生活感，從傳統的和服店、佛具店到現代的百元店與藥妝店應有盡有，且價格通常比百貨公司更為親民。來到這裡一定要品嚐超過七十年歷史的烤麻吉紅豆湯，坐在充滿古味的店內欣賞舉型山笠模型。這裡是福岡在地人採買生鮮與日常用品的重要場域，更是遊客深入探索福岡老街魅力的必遊之地。	https://youtu.be/nZam6eLh_6w?t=1370	https://maps.app.goo.gl/vXW4Hu7dCR8Hs1A16	
+糸島沙灘 (奇蹟漂流木)	Itoshima Beach	人氣打卡	海景點	福岡小夏威夷、奇蹟漂流木鞦韆、絕美白色鳥居海景、自駕遊勝地	福岡郊區 (糸島)	二見浦夫婦岩附近	糸島被譽為福岡的「小夏威夷」，擁有廣闊湛藍的海景與充滿藝術氣息的沙灘。其中「奇蹟的漂流木」是超人氣的拍照點，相傳這根木頭躲過了重重災難，因此被視為平安度過難關的象徵，其改造成的盪鞦韆更是遊客必拍的網美設施。沿著海岸線散步，可以感受到慢活的度假氛圍，非常適合安排自駕行程。這裡的海水清澈見底，搭配白色鳥居與遠處的夫婦岩，構築出糸島最具代表性的絕美明信片景致。	https://youtu.be/nZam6eLh_6w?t=2171	https://maps.app.goo.gl/EfbDSYcojTKRCAgU6	
+糸島牡蠣小屋	Itoshima Oyster Hut	美食餐廳	海鮮燒烤店	產地現撈現烤、鮮甜飽滿大牡蠣、期間限定美味、海鮮種類豐富	福岡郊區 (糸島)	糸島漁港	來到靠海的糸島，造訪期間限定的「牡蠣小屋」是當地的特色行程。小屋內提供現撈現烤的海鮮服務，產地直送的牡蠣顆顆飽滿肥美，充滿濃郁的海味鮮甜，簡單燒烤後便是頂級美味。除了牡蠣，通常還提供扇貝、蝦子等各式豐富海鮮供選購。在充滿炭火香氣的簡易棚屋內，與親友圍坐在烤爐旁享受親自動手烤海鮮的樂趣，是福岡冬季與春初最具在地風味的飲食體驗，深受國內外遊客喜愛。	https://youtu.be/nZam6eLh_6w?t=2342	https://maps.app.goo.gl/zbAj9xUR2JDKQ9jh7	
+利久牛舌	Gyutan Sumiyaki Rikyu	美食餐廳	牛舌專賣店	厚切炭烤牛舌、Q彈有嚼勁、品項穩定連鎖名店、博多車站樓上	福岡博多	博多車站 AMU PLAZA	來自仙台的利久牛舌是喜愛日式燒肉者的必吃清單，博多店位在車站商場內，位置絕佳。主打炭火現烤的厚切牛舌，其咬勁 Q 彈且油脂豐富，搭配清甜的牛尾湯與麥飯，構成一份完美的日式定食。儘管是連鎖經營，但每間店的品質穩定度極高，服務水準也相當親切。除了經典的牛舌餐點，店內也提供各種明太子配菜或特色料理。對於行程趕緊但在離開福岡前想大快朵頤的旅客，博多車站樓上的利久牛舌是絕對不會踩雷的優質選擇。	https://youtu.be/nZam6eLh_6w?t=3194	https://maps.app.goo.gl/d6GFn88CX3Ae9ery8	3
+魚男 Fishman	Fishman	美食餐廳	創意海鮮餐廳	博多階段盛定食、新穎海鮮料理、夜間居酒屋、聯名拉麵合作	福岡天神	天神南站附近	魚男 Fishman 是一間將傳統海鮮定食與現代美學完美結合的人氣店鋪。其最知名的「博多階段盛」定食，將各式精緻前菜與新鮮海鮮如階梯般排列，視覺張力十足。店內的魚貨新鮮度極高，鮪魚與鯛魚的口感令人驚艷。除了本業海鮮，店內也常與知名拉麵品牌推出無麩質聯名拉麵，其鹹甜交織的鹹味奶霜布丁更是老饕必點。服務細節如入座後的冰茶與餐後的熱茶暖胃，展現出極致的款待精神，是天神地區極具代表性的創意料理店。	https://youtu.be/aY8s5LIcJxE?t=51	https://maps.app.goo.gl/gQ4LFZmX3UbUgfUy9	2
+宮地嶽神社	Miyajidake Shrine	觀光名勝	神社	日本第一大注連繩、光之道落日絕景、2月與10月限定奇觀、筆直參道直通大海	福岡郊區 (福津)	福間站轉巴士	位於福岡福津市的宮地嶽神社，因嵐（Arashi）的廣告而聲名大噪。這裡擁有三大日本之最：巨大的注連繩、大鈴以及大太鼓。最令遊客神往的是每年 2 月與 10 月期間限定的「光之道」，落日夕陽會剛好落在直通海邊的筆直參道正中央，形成金色閃耀的夢幻景致。即使非季節造訪，神社莊嚴的建築與精美的御守（特別是夢想成真御守）仍極具參拜價值。神社後方還有美麗的海水浴場與設計感建築，是遠離市區享受海景與神祕氛圍的絕佳旅遊地。	https://youtu.be/aY8s5LIcJxE?t=798	https://maps.app.goo.gl/aS8N3Xe12VDWhatcA	
+博多 華味鳥	Hakata Hanamidori	美食餐廳	水炊鍋餐廳	頂級水炊鍋料理、九州在地雞肉、極濃郁膠質雞湯、雜炊收尾	福岡博多	博多車站前	華味鳥是福岡水炊鍋（雞肉鍋）最知名的連鎖品牌，以自家養殖的「華味鳥」為主要食材。用餐過程充滿儀式感：首先品嚐清澈純淨的雞湯，接著享用滑嫩的雞肉塊、手工雞肉丸與鮮甜蔬菜。湯底富含大量膠質，喝完後唇齒間會有一種微黏的濃郁感。最後將剩下的精華湯頭與米飯煮成「雜炊」收尾，每一口都吸滿了雞肉與蔬菜的甜味。華味鳥的分店眾多且品質穩定，服務周到且環境優美，是非常適合家庭出遊或長輩隨行的高質感料理選擇。	https://youtu.be/aY8s5LIcJxE?t=1148	https://maps.app.goo.gl/1Q2hkRmtveeFGiWL9	2
+武雄市圖書館	Takeo City Library	人氣打卡	圖書館	日本最美圖書館之一、結合星巴克與書店、宏偉木質建築、極具設計感	佐賀 (武雄/鹿島)	武雄溫泉站	位於佐賀縣的武雄市圖書館，打破了傳統公共空間的藩籬，以宏偉的木質結構與暖色調燈光營造出如藝術館般的閱讀空間。館內結合了星巴克咖啡與蔦屋書店，讓訪客能在大面書牆環繞下，一邊品嚐咖啡一邊享受書香。其創新的經營模式與極致美學設計，使其成為日本全國知名的打卡地標。即便非當地市民，這裡的安靜氛圍與獨特的建築張力，也足以讓每位旅人在旅程中找到一處靜心感悟生活之美的角落。	https://youtu.be/o2PVQqJ8Zu0?t=203	https://maps.app.goo.gl/eknDovXXvRbYGUV56	
+RINGO	RINGO	美食餐廳	甜點鋪	現烤卡士達蘋果派、季節限定口味、餅皮酥脆如可頌、不含肉桂粉	福岡天神	天神地下街內	RINGO 是天神地下街最具人氣的甜點舖，總是被現烤出爐的香氣所圍繞。主打的卡士達蘋果派擁有如可頌般層層堆疊的酥脆外皮，內部包覆著酸甜適中的蘋果塊與細滑的卡士達醬。對於不喜歡肉桂味的遊客，RINGO 的調味純粹展現果香與乳香。此外，店家不定期推出季節限定口味如紅薯或草莓卡士達，每口都能咬到實體果肉顆粒。這款甜點外皮酥脆且甜而不膩，是許多旅人路過必買的五星級點心。	https://youtu.be/064FtEAQlIU?t=1264	https://maps.app.goo.gl/6KDEEQa6imMrrvYJ7	
+燒肉 ヨーロー	Yakiniku Yoro	美食餐廳	燒肉店	藥院燒肉姐妹店、提供中文點餐、經典七選肉品組合、近天神市中心	福岡天神	西鐵天神站附近	燒肉ヨーロー是福岡極高評價「藥院燒肉」的姐妹店，延續了高品質肉品與親民價位的優良基因。店內設有獨立隔板，保有優良的用餐隱私，並提供 iPad 中文點餐系統，對外國遊客極為友善。特別推薦「經典七選」組合，能一次品嚐到牛舌、特上橫膈膜及油脂豐沛的五花肉等多種部位。其中附帶蛋黃的「月見燒肉」更是必點，將烤好的肉片浸入鮮甜蛋黃中，口感滑嫩無比。對於想吃名店卻不想去藥院大排長龍的旅客，這裡是更便利的優質選擇。	https://youtu.be/064FtEAQlIU?t=1527	https://maps.app.goo.gl/DUhAY5BCWmwiPgnt5	2
+Omusubi Giver	Omusubi Giver	美食餐廳	飯糰專賣店	職人現捏飯糰、居酒屋風格店面、多樣化明太子口味、大胃王挑戰活動	福岡藥院 / 六本松	藥院車站周邊	這是一間風格獨特的手作飯糰專賣店，店內採長型吧台設計，充滿濃厚的昭和居酒屋感。店家強調米飯粒粒分明且海苔酥脆，招牌口味包含炙燒明太子、辛子高菜等九州風情料理。特別推薦加點鮭魚卵，晶瑩剔透的魚卵與飯糰結合出的鮮美海味堪稱絕配。店內最引人注目的是 20 分鐘吃完 25 個飯糰的大胃王挑戰活動。無論是作為在地人的活力早餐或是輕鬆的午餐，這裡都能讓你重新定義日式飯糰的極致境界。	https://youtu.be/064FtEAQlIU?t=1843	https://maps.app.goo.gl/jxsbB6nVBCrxsq4o7	
+Pita Ratti	Pita Ratti	購物採買	手作飾品店	手作飾品 DIY、豐富配件牆、客製化戒指與項鍊、極高人氣手藝店	福岡藥院 / 六本松	藥院巷弄內	Pita Ratti 是一間充滿少女心的手藝飾品店，以一整面色彩絢麗、琳瑯滿目的配件牆著稱。顧客可以自由挑選喜愛的珠子、緞帶或金屬零件，並由專業人員現場協助拼湊、焊接，打造成獨一無二的戒指、耳環或手機掛繩。店內提供的配件包含法式蝴蝶結與各式金屬編織鍊，風格從甜美到極簡應有盡有。由於 DIY 體驗極受歡迎，店內常顯得擁擠，建議造訪前預留充分時間挑選。這是福岡少數能親手打造專屬紀念品的特色選物店。	https://youtu.be/064FtEAQlIU?t=3238	https://maps.app.goo.gl/Xa27ZE57xtfyL88R8	
+祐德稻荷神社	Yutoku Inari Shrine	觀光名勝	神社	日本三大稻荷之一、九州版清水寺、117級木造階梯、千本鳥居、250年歷史大樹	佐賀 (武雄/鹿島)	肥前鹿島站	祐德稻荷神社與京都伏見稻荷、茨城笠間稻荷並稱為「日本三大稻荷」，其依山而建、宏圍壯麗的朱紅本殿甚至贏得了「九州清水寺」的美譽。神社境內四季美景交替，特別是秋季時分，漫山遍野的紅葉與鮮紅的鳥居交相輝映，構成一幅令人窒息的視覺盛宴。遊客可沿著 117 級古樸的木造階梯登上觀景台，俯瞰鹿島市的壯闊地貌與明麗秋色。除了祈求商貿繁榮，這裡也是著名的結緣聖地。穿過綿延不斷的千本鳥居走向奧之院，那份清幽寧靜的氛圍足以洗滌心靈。入口商店街提供的特色甜點與地道美食，更是參拜後不可或缺的暖心體驗，是深度探索九州宗教遺產與自然之美的絕佳聖地。	https://youtu.be/8RCbgChtAaU?t=283	https://maps.app.goo.gl/T1DrEcBQUbdmAPvt5	
+月島文字燒 たまとや	Tsukishima Monja Tamatoya	美食餐廳	文字燒	東京知名文字燒福岡首店、職人桌邊現煎、明太子起司口味推、互動感強	福岡天神	One Fukuoka Building	位於 2024 年全新開幕的 One Fukuoka Building 內，月島もんじゃ是東京文字燒名店首次進軍福岡的據點。店內環境新穎活潑，主打職人全程桌邊服務，從翻炒食材到勾芡、鋪上明太子與麻吉，整個製作過程宛如精彩表演。推薦嘗試加入起司與專用文字燒醬的經典組合，微焦的底層口感脆口、內餡軟糯鮮美。對於想在福岡體驗道地江戶庶民美食，又追求熱鬧、高品質用餐氛圍的旅人來說，這裡是不容錯過的排隊名店，讓你在九州也能品味到正宗的東京下町風味。	https://youtu.be/064FtEAQlIU?t=3796	https://maps.app.goo.gl/sbBZ4sTg1UxkWzEq6	
+博多とりかわ大臣 天神串房	Hakata Torikawa Minister Tenjin Kushibo	美食餐廳	居酒屋	福岡特色雞皮串、外酥內嫩厚實感、鹽烤與醬烤雙重風味、下酒首選	福岡天神	One Fukuoka Building B1F	博多とりかわ大臣是福岡雞皮串燒的指標性店家，將雞皮緊密重疊、層層串起，並反覆烘烤出多餘油脂，展現出的彈牙與脆口令人著迷。這裡的雞皮較一般串燒店更顯厚實且具備嚼勁，是博多人的靈魂美食。建議各點一盤鹽烤與醬烤：鹽烤能完美襯托出雞肉油脂的鮮甜，醬烤則濃郁開胃。位於 2024 年全新開幕的 One Fukuoka Building 分店環境不僅舒適新穎，更是體驗在地居酒屋文化的熱門首選，非常適合在行程結束後搭配一杯冰涼啤酒作為宵夜，感受福岡極致的燒烤工藝。	https://youtu.be/064FtEAQlIU?t=4078	https://maps.app.goo.gl/ZUyqmJ1JeP7d3mtt5	
+鯖の真	Saba no Shin	美食餐廳	定食專賣店	極難預約烤魚早餐、炭火慢烤鮭魚與鰻魚、傳統爐端燒氛圍、限量定食	福岡天神	天神站	鯖の真被譽為福岡最難預約的烤魚早午餐店，隱身在一般住宅建築中，卻擁有極具原始感的炭火爐灶。店內每天僅提供限量預約席，主打使用純炭火慢烤出的鮭魚與鰻魚定食。魚肉油脂經炭火催化後香氣鋪鼻，搭配現煮米飯與醃菜，是最高境界的日式和風早餐。雖然炭烤過程產生的煙味極重，用餐完畢身上會留有強烈氣味，但那種在氤氳煙霧中享受現烤鮮魚的「職人感」體驗與美味程度，仍讓無數食客趨之若鶩。對於追求極致日式旬味與質樸美味的饕客來說，這裡的每一口鮮甜都是等待與預約的最高回報。	https://youtu.be/064FtEAQlIU?t=4423	https://maps.app.goo.gl/hRWtwsPh4v1Um5hJA	
+丼丸	Donmaru	美食餐廳	海鮮丼專賣店	超平價海鮮丼、多樣化選擇(碎鮪魚/鮭魚卵)、長溫白米飯、居家感小店	福岡博多	博多站	丼丸是一家深受當地居民喜愛的平價海鮮丼飯專賣店，氛圍樸實且極具生活感。店內提供數十種海鮮組合，包含油脂豐富的碎鮪魚、晶瑩剔透的鮭魚卵與鮮甜花枝，且價格親民得驚人。這裡的丼飯使用長溫白米飯而非冷醋飯，海鮮食材新鮮無腥味，能完整帶出魚產的原始甘甜。推薦其大份量的綜合海鮮丼，口感紮實且飽足感十足。對於想快速墊肚子且追求高性價比的旅人來說，這家位於巷弄中的小店是體驗福岡在地庶民美味的最佳補給站，展現了日本鄰里美食的親切與實惠。	https://youtu.be/QQ6QvG7H28c?t=252	https://maps.app.goo.gl/rXC5C2kUzmLYKKKE6	
+一蘭拉麵 總店	Ichiran Headquarters	美食餐廳	拉麵店	獨棟大樓建築、外部紅燈籠點燈、定時樂器表演、經典豚骨拉麵	福岡中洲	中洲川端站	位於中洲的一蘭拉麵總店是一座極具氣勢的獨棟建築，整棟樓掛滿了標誌性的紅色燈籠，夜晚點燈後更顯輝煌。最特別的是大樓外部定時會有身著傳統服飾的樂師在窗台表演三味線或小提琴，營造出如祭典般的熱鬧氛圍。雖然湯頭維持一蘭經典的濃郁豚骨風味，但在總店用餐多了份朝聖的儀式感。店內同樣設有獨立的味集中座位，且排隊動線流暢。這裡是遊客體驗福岡拉麵文化、感受一蘭企業規模的必訪之地，在熱鬧的歌聲與樂音中品嚐熱騰騰的拉麵，絕對是博多之夜的經典回憶。	https://youtu.be/QQ6QvG7H28c?t=1144	https://maps.app.goo.gl/9QZxCyhF91muMXHo6	
+竈門神社	Kamado Shrine	觀光名勝	神社	鬼滅之刃朝聖地、結緣與戀愛守護、設計感御守販賣部、山頂夕陽美景	福岡郊區 (太宰府)	寶滿山山麓	位於寶滿山山下的竈門神社，因其名稱與《鬼滅之刃》主角竈門炭治郎相同而成為熱門朝聖點。這是一間以「結良緣」聞名的古老神社，近年更因由著名設計師操刀、前衛感十足的粉色御守販賣部而聲名大噪。旅人可以在此購買精緻的御守或畫一張鬼滅主題的繪馬。神社位居高處，視野遼闊，是觀賞楓葉與夕陽的極佳據點。從太宰府車站搭乘小巴士即可抵達，是尋求戀愛運勢、購買高質感御守與動漫愛好者的秘密天堂，充滿了神聖又現代的靈性氛圍。	https://youtu.be/QQ6QvG7H28c?t=1882	https://maps.app.goo.gl/h9rVz35wyuBSRH6U6	
+藥院燒肉 肉いち	Yakuin Yakiniku Nikuichi	美食餐廳	燒肉店	福岡必吃燒肉、高性價比黑毛和牛、中文點餐系統、推薦板腱肉與蒜香石鍋飯	福岡藥院 / 六本松	藥院站	肉いち（Nikuichi）被譽為福岡 CP 值最高的燒肉店，提供極高品質的黑毛和牛卻擁有相當平易近人的價格。店內提供多國語言的 iPad 點餐系統，對遊客極為便利。特別推薦「特選七種拼盤」，可一次品嚐到油脂豐沛的板腱肉與厚實無筋的里肌肉。搭配一碗充滿鐵板香氣的「蒜香石鍋拌飯」，每一口都令人感到極致幸福。由於極受歡迎，強烈建議預先訂位，或是在開門前即前往現場等候，是福岡自由行中絕不踩雷的美食重頭戲，讓饕客在合理的預算內享受和牛的極致饗宴。	https://youtu.be/QQ6QvG7H28c?t=2029	https://maps.app.goo.gl/Nd1vduScsU3jfTDr9	2
+肥後正屋	Higo Masaya	美食餐廳	拉麵店	米其林推薦雞湯拉麵、清澈不鹹湯頭、必點現烤焦脆餃子、職人單人作業	熊本	熊本市區	肥後正屋是一間隱身巷弄、僅由一位職人經營的拉麵小店，曾獲得米其林推薦肯定。這裡的拉麵與博多濃郁豚骨風格截然不同，主打清澈見底、鮮美溫潤的雞湯拉麵，口感極像家常手作般親切卻深邃。特別推薦其「現烤餃子」，一側焦香酥脆、另一側柔嫩多汁，與清爽的湯麵堪稱絕配。店內座位極少、氣氛安靜，能近距離觀察師傅專業的動作，展現了極致的職人精神。對於受夠了日本重口味拉麵的旅客，這裡的雞湯香氣與實惠價格將會是您旅途中的驚喜發現，洗滌味蕾的疲勞。	https://youtu.be/QQ6QvG7H28c?t=4582	https://maps.app.goo.gl/1K2orc2NGpS9Mdao9	2
+茶碗蒸し 雲兒	Chawanmushi Kumo	美食餐廳	居酒屋	茶碗蒸主題居酒屋、多達數十種口味、首推起司與蝦仁、低負擔宵夜首選	福岡中洲	中洲人行小路	雲兒隱身在如迷宮般的神祕「中州人行小路」內，是一間罕見的茶碗蒸專賣店。這裡將平凡的茶碗蒸提升至藝術層次，提供起司、蘑菇、甚至是碳烤蝦仁等多種驚艷口味。其蛋液極致滑順、完全無氣孔，入口即化如高湯布丁。前菜如芥末乳酪豆腐也同樣水準卓越。餐廳營業至凌晨兩點，非常適合在酒後尋求溫潤清爽的澱粉與熱量補給。這家店完美體現了日式職人對單一食材的極致追求，是中州夜晚最溫暖的一道風景，為忙碌的都市之夜提供了一份溫潤而輕盈的撫慰。	https://youtu.be/QQ6QvG7H28c?t=8016	https://maps.app.goo.gl/JjtGXzMbnWr9KRpw6	
+博多もつ鍋 前田屋	Hakata Motsunabe Maedaya	美食餐廳	牛腸鍋餐廳	博多前三名牛腸鍋、味噌/醬油雙口味、口感軟綿富油脂、需預約名店	福岡博多	櫛田神社前站	前田屋是博多公認最具代表性的牛腸鍋（Motsunabe）名店之一，其超高人氣常讓排隊時間長達兩小時。首推「味噌風味」湯頭，濃郁甘甜的湯底完美包覆了軟綿 Q 彈且富含油脂的牛腸。雖然對不習慣內臟油脂的人來說較為肥厚，但其完全無腥味的品質與最後加入強韌麵條吸收殘湯精華的極致美味，仍吸引無數食客。店內氛圍熱絡，提供中文菜單，是想體驗博多「靈魂美食」與冬日圍爐感最正宗的選擇，透過熱氣騰騰的鍋物能深刻感受到福岡在地人的豪爽與熱情。	https://youtu.be/QQ6QvG7H28c?t=9386	https://maps.app.goo.gl/vZm8bi56kVLMFuALA	2
+博多 壱弐參	Hakata Ichinisan	美食餐廳	定食專賣店	現烤明太子鰻魚玉子燒丼、內餡厚實多汁、中午套餐免飲料費、送專屬貼紙	福岡博多	櫛田神社前站	這是一家近期在社群軟體爆紅的視覺系丼飯店，以其「巨型鰻魚明太子玉子燒」著稱。每一份丼飯都疊加了超厚實的現烤玉子燒，頂部鋪滿大塊鰻魚或晶瑩鮭魚卵，視覺張力驚人。與一般冷食丼不同，這裡提供熱氣騰騰的米飯，淋上焦香醬油後香氣四溢。中午時段提供定食套餐且不強制點酒水，性價比極高，用餐還贈送可愛的角色貼紙。由於店內座位極少且不接受現場排隊，需提早透過線上系統預約，是博多目前最時髦且精緻的打卡饗宴，結合了創意造型與紮實美味。	https://youtu.be/QQ6QvG7H28c?t=8987	https://maps.app.goo.gl/nZ6m6vSD353J6qxq9	3
+橡子共和國	Donguri Republic	購物採買	禮品店	吉卜力工作室周邊專賣店、精緻磁鐵與時鐘小物、宮崎駿迷朝聖地	福岡博多	博多運河城 B1	隱身在運河城 B1 的橡子共和國，是所有宮崎駿影迷的夢幻天堂。店門口通常有巨大的龍貓迎接顧客，店內陳列著各式精緻的吉卜力動畫周邊，從可愛的角色磁鐵組到設計感十足的裝飾時鐘應有盡有。雖然部分精品單價較高，但其細膩的做工與療癒的造型總讓人忍不住收藏。在這裡逛街就像走進了動畫場景，充滿童趣與驚喜，是選購獨特日系紀念品及感受日本動畫文化底蘊的絕佳去處，不論是大人還是孩子都能在此找到心中的那份純真與驚喜。	https://youtu.be/Bzc_mmGL08c?t=293	https://maps.app.goo.gl/rXWTLQES7Yx8vP528	
+AEON Shoppers Fukuoka	AEON Shoppers Fukuoka	購物採買	超級市場	巨型超市、熟食區選擇驚人、推薦南非國寶茶與厚切馬鈴薯片、價格實惠	福岡天神	Mina Tenjin 旁	這間位於天神的 AEON 超市規模巨大，是當地人與內行觀光客的必訪補給站。B1 的熟食區每到傍晚便熱鬧非凡，各式炸物、壽司及便當品質優異且常有折扣。店內販售多種風味的南非國寶茶及期間限定的洋芋片，價格遠比便利商店親民。這裡更設有大型生鮮區，對於入住附廚房旅館的旅客來說，是採購黑毛和牛回飯店自煎的最佳場所，提供最接地氣的日本採買體驗。不論是尋找伴手禮還是解決宵夜需求，這裡都能以極佳的性價比滿足旅人的各種生活需求，感受道地的日式消費節奏。	https://youtu.be/Bzc_mmGL08c?t=644	https://maps.app.goo.gl/pPaRLFeLkauKuXL5A	
+福岡 PARCO	Fukuoka PARCO	購物採買	百貨公司	動漫迷天堂、蠟筆小新與各類卡通專賣店、時尚與文化結合、日系選物品牌大集合、Urban Research與Beams、地下美食街、潮流與動漫文化基地、進駐海賊王專門店及JUMP SHOP、5樓大型官方扭蛋區、本館與新館設有連通橋、集結大量動漫、卡通周邊專賣店、匯集眾多日系潮流服飾品牌、設有豐富的美食街與咖啡廳	大分 (由布院)	地鐵天神站 7 號出口直結	福岡 PARCO 是天神地區極具活力的流行百貨地標，其舊館更是動漫愛好者公認的朝聖基地。館內設有大規模的卡通專賣店，匯集了蠟筆小新及各式熱門 IP 的精美周邊，常吸引大量人潮前來排隊購買限量商品。除了深厚的文化創意氛圍，PARCO 也集結了眾多極具個性的日本本土設計師服飾品牌與創意餐廳，讓這裡成為潮流與文化的完美交會點。作為天神地區最具人氣的年輕潮流中心，百貨由本館與新館組成並設有便利的連通橋，規模適中且逛街動線流暢，匯集了 Urban Research 與 Beams 等高品質日系選品旗艦櫃位。此處進駐了包含海賊王商店及 JUMP SHOP 等據點，5 樓更設有規模龐大的 Bandai 官方扭蛋區。地下美食街更隱藏了許多知名拉麵店，無論是尋找前衛球鞋或日雜風格服飾，福岡 PARCO 都能提供最完整的日系生活提案。	https://youtu.be/Bzc_mmGL08c?t=1344, https://youtu.be/fe4Eockm0HM?t=871, https://youtu.be/fxAJJ-tmCtM?t=1244s, https://youtu.be/JFrQM24tp-4?t=1109 	https://maps.app.goo.gl/WtxPtMLcHqQrcB5B8	
+INCUBE 天神店	INCUBE	購物採買	生活雜貨店	三層樓大型雜貨店、棚架高度友善、九州特色選物、西鐵周邊商品販售	大分 (由布院)	Solaria Stage	位於 Solaria Stage 內的 INCUBE 是一間規模宏大的生活雜貨專賣店。這裡的層架設計較低，視覺上非常開闊且便於挑選商品。店內匯集了從質感文具、居家小物到各類創意禮品，應有盡有。特別推薦其販售的西鐵電車相關周邊，對於小小鐵道迷來說是絕對會瘋狂的挖寶聖地。這裡是尋找具有日本設計巧思與九州在地特色小物的不二之選，建議預留充足時間，在天神站轉乘或逛街的空檔，在此享受一場充滿驚喜的雜貨洗禮，為日常家居增添一份來自福岡的設計質感與趣味性。	https://youtu.be/yJM3EagsyKk?t=313	https://maps.app.goo.gl/8UvbmSHFqQrfvboB7	
+Cosmetia	Cosmetia	購物採買	美妝店	綜合美妝選物店、品牌齊全（雪肌精, DECORTÉ 等）、美妝男子的最愛	大分 (由布院)	Solaria Plaza	Cosmetia 是一間集合了眾多日本高端保養與彩妝品牌的選品店。店內陳列了包含雪肌精、ADDICTION 與 DECORTÉ 在內的明星商品，讓顧客能在一站式完成所有美妝保養的試用與採購。不論是追求極致防曬、保濕或是最新的季節彩妝，這裡的店員都能提供專業建議。舒適的購物動線與明亮的燈光，使其成為天神地區最受女性與精緻男士喜愛的妝點聖地。來到這裡，能輕鬆掌握日本當季最火紅的美容趨勢，為旅程增添一份自信的光彩，是愛美人士在福岡購物行程中絕不能漏掉的高質感據點。	https://youtu.be/yJM3EagsyKk?t=421	https://maps.app.goo.gl/JXvS8TamDwoPtNvj7	
+九州國立博物館	Kyushu National Museum	觀光名勝	博物館	日本四大國立博物館之一、流線型現代建築、展示亞洲文化交流史、與天滿宮相連	福岡郊區 (太宰府)	太宰府天滿宮旁	九州國立博物館是一座融合現代感與歷史深度的文化地標。其巨大的流線型藍色玻璃外牆隱身於森林之中，建築本身即是一件藝術品。作為日本四大國立博物館中最年輕的一員，其策展重點在於「從亞洲的視角看日本文化的形成」。館內除了常設的主題展外，也提供多樣化與參觀者互動的文化設施。館內餐廳與精品店亦極具水準，對於追求知性旅遊的遊客來說，在參拜完太宰府天滿宮後順道造訪，能更全面地理解九州這塊土地所承載的跨文化交流脈絡，享受一場洗滌心靈的知性之旅。	https://youtu.be/uJJ8WL5HKtI?t=457	https://maps.app.goo.gl/MxFxeQyb6c2TkpPg8	
+&LOCALS 大濠公園	&LOCALS Ohori Koen	美食餐廳	咖啡廳	產地到餐桌概念、八女茶專賣、玉子燒三明治、結合在地創生、九州八女茶專賣、景觀窗看湖景、農作調味料販售、人氣文青店鋪。	福岡大濠 / 百道	大濠公園站	這間坐落於優美大濠公園內的質感空間，完美揉合了現代建築與自然美景，是福岡近期極受關注的文青地標。店內強調產地到餐桌的連結，不賣咖啡，而是主打福岡知名的「八女茶」與各式精緻茶點，讓客人在落地窗外的湖光山色中體驗傳統茶文化。特別推薦其玉子燒三明治，鬆軟且帶有些微芥末香氣，口感清新脫俗。此外，店內也販售由在地農產製作的柚子胡椒、柚子鹽等精緻調味料，非常適合作為伴手禮。無論是坐在正對湖景的座次欣賞天鵝船，還是餐後在公園散步拍大南瓜，這裡都是享受福岡慢活午後的最佳站點。	https://youtu.be/aY8s5LIcJxE?t=1328, https://youtu.be/064FtEAQlIU?t=2221	https://maps.app.goo.gl/bca5hZbXV2UPxvj5A	
+B.B.B POTTERS	B.B.B POTTERS	購物採買	生活雜貨店	藥院地區知名的質感生活雜貨店。一樓展示各類精緻餐具與廚房用品。二樓販售居家家具與高品質燈具。風格簡約且極具設計感。12層樓生活雜貨、職人手作器具、日系居家質感、附設人氣法式薄餅咖啡廳。	福岡藥院 / 六本松	藥院站	坐落於文青氣息濃厚的藥院地區，B.B.B POTTERS 是追求生活品質者的朝聖殿堂。這座兩層樓的空間收錄了從日常食器、職人手作器具到藝術家具的所有美好可能。一樓匯集了各類日系與歐風生活小物，包含知名香氛品牌 APFR；二樓則展示大型居家家具並設有知名的咖啡廳，其日式法式薄餅（Galette）深受當地人喜愛。店內選品皆具備耐用性與卓越的審美價值，體現了日式簡約與北歐功能的完美契合。來到這裡不僅是購物，更是一種對日式質感生活的深度沉浸，非常適合在藥院的巷弄漫步中安排一場優雅的居家美學洗禮。	https://youtu.be/JFrQM24tp-4?t=1834, https://youtu.be/aY8s5LIcJxE?t=246	https://maps.app.goo.gl/QZSwAmShWyzq888r7	
+博多運河城	Canal City Hakata	購物採買	購物中心	環狀水岸建築、戶外用品運動旗艦店、三麗鷗與吉卜力專賣店、全福岡最大購物中心、精彩水舞秀、匯集各大動漫專賣店、外幣兌換便利、福岡必逛大型商場、設有扭蛋城與迪士尼專賣店。	福岡博多	櫛田神社前站	作為博多最具標誌性的複合式商場，博多運河城以流線型的環狀建築與中央的人造運河聞名。這裡匯集了上百家品牌，包含 Danner 登山靴等戶外運動旗艦店，更是 IP 迷的天堂，設有大型三麗鷗、吉卜力、迪士尼專賣店以及規模驚人的扭蛋城。夜晚定時演出的音樂噴泉水舞秀搭配投影效果，視覺效果震撼。不同於傳統百貨的侷促感，商場由五棟建物組成，空間極大且適合雨天備案。無論是尋找日本限定球鞋、390 日圓均一價的挖寶聖地，還是享受休閒氛圍，這裡豐富的品類與娛樂設施都能滿足各年齡層的需求，是福岡一站式採買與休閒的首選地標。	https://youtu.be/fe4Eockm0HM?t=335, https://youtu.be/nZam6eLh_6w?t=623, https://youtu.be/nuUV1SJWD50?t=54	https://maps.app.goo.gl/dKMwQdfpw9PU8Dqd8	
+DAISO (博多巴士總站店)	DAISO Hakata Bus Terminal	購物採買	百圓店	位於巴士總站5樓。規模極大、貨品極其齊全。設有大量萬聖節等節慶限定精品。零食種類豐富，部分品項優於一般超市。	福岡博多	博多巴士總站 5 樓	這間位於博多巴士總站五樓的 DAISO 是福岡市區內首屈一指的旗艦級分店。其佔地極為廣闊，幾乎涵蓋了所有你能想像到的日系生活小物、創意文具與居家必備品。店內商品更新速度極快，設有豐富的季節限定專區，如萬聖節主題精品。更令人驚豔的是其零食區，種類之繁多甚至能與大型超市媲美，且價格極具競爭力。對於想在行程最後衝刺、一站式購足高品質且低單價伴手禮的旅客而言，這裡不僅能滿足所有採買需求，寬敞的動線更讓人在漫遊期間享受到尋寶般的樂趣。	https://youtu.be/-ayNS6n7nuQ?t=343s	https://maps.app.goo.gl/79eF9B8U7LwwhM9r8	
+DAISO (福岡中洲川端店)	DAISO Fukuoka Nakasu Kawabata	購物採買	百圓店	百元商店首選、推薦特色磁鐵剪刀與切蛋器、廚房實用小物齊全。	福岡博多	川端通商店街內	位於川端通商店街內的這家大創雖然規模較為精簡，但針對當地生活與旅客需求挑選的品項非常精確。店內匯集了大量創意與功能性兼具的百元小物，特別推薦其廚房實用系列，如背面附磁鐵可吸附於冰箱的拆包裹剪刀、各式精緻的切蛋器、醃蛋盒及章魚燒刷等。對於喜愛挖掘生活小智慧的人來說，這裡是不折不扣的尋寶天堂。雖然每件單品價格極低，但其設計的巧思往往能大幅提升居家生活的便利性。路過商店街時花少許時間入內一逛，常能發現意想不到的實用驚喜，是非常適合快速補貨的採購點。	https://youtu.be/nuUV1SJWD50?t=1334	https://maps.app.goo.gl/Rt6G1E5Wf9386kK6A	
+海之中道海洋世界	Marine World Uminonakamichi	主題體驗	水族館	2017年重新裝修、九州人氣海洋博覽、離車站步行5分鐘、三層樓展示空間。	福岡東區	JR 海之中道站	這座水族館位於福岡東區，從 JR 車站步行僅需 5 分鐘即可抵達。自 2017 年大規模翻修後，以「九州之海」為主題重新定義，室內空間充滿現代感與藝術氣息。館內最引人矚目的是全景海洋劇場，以壯闊的博多灣為背景，展現海豚與海獅的動感表演。此外，這裡收藏了豐富的九州近海生物，透過巨大的透明水槽，訪客能近距離觀察深海奇觀。無論是家庭出遊或是情侶約會，這裡都是福岡必訪的休閒與教育聖地，透過三層樓的展示空間，能一次滿足視覺享受與對海洋生態的深度探索。	https://youtu.be/GhQgg9XOG6A?t=30,  https://youtu.be/qX9t7-f_j7s?si=qsHrJ1XS9SdIpJpr?t=85	https://maps.app.goo.gl/Qi9SBbQviKR9tPYu8	3
+太宰府天滿宮	Dazaifu Tenmangu	觀光名勝	神社	學問之神菅原道真、摸牛角增長智慧、千年歷史神社、學問之神總本宮、祈求考試順利、絕美參道老街、特色梅枝餅、隈研吾大師設計星巴克、日本初詣體驗、2026年重開本殿、臨時本殿建築特殊。	福岡郊區 (太宰府)	太宰府站	太宰府天滿宮是日本一萬多座天滿宮的總本宮，供奉著學問之神菅原道真，是全日本莘莘學子祈求考運順利的最強聖地。通往神宮的參道老街充滿古色古香，必吃外皮微脆、內裹紅豆餡的「梅枝餅」，並造訪由建築大師隈研吾設計的特色星巴克。神社境內莊嚴肅穆，有著被摩得發亮的御神牛銅像與橫跨心字池的三座橋梁。值得注意的是，本殿在經歷大修後於 2026 年重新開放，其臨時本殿的特殊設計也曾引起廣泛討論。無論是初詣期間的熱烈氛圍，還是四季更迭的梅花與櫻花美景，這裡完美揉合了傳統信仰與精緻和風美學，是福岡近郊旅遊的靈魂景點。	https://youtu.be/fe4Eockm0HM?t=1468, https://youtu.be/nZam6eLh_6w?t=1744, https://youtu.be/QQ6QvG7H28c?t=1300, https://youtu.be/yJM3EagsyKk?t=1630, https://youtu.be/uJJ8WL5HKtI?t=283	https://maps.app.goo.gl/PKtnqZqm8HsxXLA66	
+唐吉訶德 中洲店	Don Quijote Nakasu Store	購物採買	折扣店	24小時營業、樓下附設大型超市、藥妝採購便利、一站式購足。	福岡中洲	中洲川端站	位於中洲核心地帶的唐吉訶德，以其 24 小時營業時間與驚人的商品密度著稱。這裡不僅提供琳瑯滿目的零食、玩具與小物，更是福岡購買平價藥妝與電器的重鎮。店內設計便於旅人一次完成退稅，能高效率地買齊所有日用品與伴手禮。最特別的是 B1 層設有大型超市，生鮮與熟食選擇眾多且價格極具競爭力。對於喜愛深夜逛街或需要在短時間內滿足全方位採買需求的遊客，這裡無疑是福岡最不夜城的血拼聖殿，是旅途中補給與採購伴手禮的絕佳去處。	https://youtu.be/nuUV1SJWD50?t=1008	https://maps.app.goo.gl/4UpFz5EWAahH6Gny6	
+THE FULL FULL HAKATA	THE FULL FULL HAKATA	美食餐廳	麵包店	招牌明太子法國麵包、現烤脆皮麵包、博多必吃甜點、現烤香脆外皮、內餡柔軟濕潤、每人限購五個	福岡博多	櫛田神社前站	來到福岡絕對不能錯過的明太子料理，而 Full Full Hakata 則是將明太子與烘焙結合的佼佼者。這間位於運河城與櫛田神社旁的本店，以現烤的明太子法國麵包聞名，麵包外皮極致酥脆，咬開後是滿溢的濃郁且帶有微辣感的明太子內餡，每一口都能吃到誠意十足的海味。由於太過熱銷，店內規定每人限購五個，且經常一出爐便被搶購一空。除了招牌，店內的法式吐司與菠蘿麵包也各具特色。這裡融合了博多明太子文化與法式烘焙工藝，即使是簡單的餅皮也能展現出豐富的層次感，若選擇在內用區享用熱騰騰的現烤麵包，那種幸福感絕對值得等待，是所有造訪福岡的麵包控絕對不能過過的朝聖點。	https://youtu.be/fe4Eockm0HM?t=414, https://youtu.be/QQ6QvG7H28c?t=420	https://maps.app.goo.gl/3d8XFukD1XTfdVU4A	
+博多一雙 中洲店	Hakata Issou Nakasu	美食餐廳	拉麵店	豚骨拉麵界的「卡布奇諾」、脂泡乳化湯頭、味道極濃郁、排隊名店	福岡中洲	中洲川端站	博多一雙以其視覺感驚人的「脂泡」湯頭聞名，被譽為拉麵界的卡布奇諾。這層細緻的白色泡沫是長時間高火熬煮出的乳化脂肪，入口時滑順如絲，隨後迎來的是如海浪般席捲味蕾的強力豚骨撞擊感。中州店位於繁華鬧區，雖然排隊人潮不斷且豬骨氣味強烈，但這份極致的油脂甘甜吸引了全日本的豚骨信徒前來朝聖。麵條採用博多傳統極細直麵，與精華湯底完美結合，展現出福岡極具暴力美學色彩的飲食文化巔峰。無論是作為正餐還是宵夜，這裡濃郁的職人湯頭都是品味博多靈魂風味的終極選擇。	https://youtu.be/m_eC0bTDFXU?t=571	https://maps.app.goo.gl/gMf3o1QrszKZ5Z558	
+HIGHTIDE STORE FUKUOKA	HIGHTIDE STORE FUKUOKA	購物採買	文具店、咖啡廳	福岡本土文具品牌旗艦店、展示多款色彩繽紛、具機能性的原創文具、店內氛圍時髦且具工業風、附設小型咖啡外帶區、文具控必訪、設計感選物、手帳周邊豐富、附設清涼咖啡休憩區、福岡本土文具品牌、九州特色紀念品、復古風鑰匙圈、結合咖啡與小酒空間	福岡藥院 / 六本松	藥院大通站	HIGHTIDE STORE 是誕生於福岡的文具生活選物品牌，店名寓意「滿潮」帶來的幸福感。其位於藥院地區的旗艦店是一座融合了文具、設計與咖啡的複合式空間，店內陳列著色彩繽紛且具高度功能性的筆記本、收納袋與各式創意文具，如巨大的鉛筆裝飾與手作感的編織背帶。這裡展示了最完整的系列商品，從經典系列到與各界聯名的文創小物，每一件都充滿靈活的機能。空間設計採時髦工業風，搭配隨處可見的創意巧思，營造出充滿靈感的空間。除了具備實用功能的設計選物，店外還設有輕食與飲酒區，讓旅人能邊啜飲咖啡邊翻閱手帳。對於追求獨特伴手禮的遊客，這裡承載了福岡特有的文化幽默與設計實力，是藥院地區文創縮影的絕佳櫥窗。	"https://youtu.be/JFrQM24tp-4?t=1892, https://youtu.be/064FtEAQlIU?t=3112, https://youtu.be/aY8s5LIcJxE?t=362  
+"	https://maps.app.goo.gl/gZg3W9cJCRPkYhNq5	
+I'm donut ? 福岡店	I'm donut ? Fukuoka	美食餐廳	甜甜圈專賣店	生甜甜圈始祖、鬆軟綿密、開心果口味、森林感店裝、超人氣排隊、超人氣「生冬甩」名店、口感極致韌性且濕潤、推薦原味、開心果及吉士醬口味、排隊時間約30分鐘以上	福岡天神	天神南站 6 號出口	I'm donut ? 以其革命性的「生甜甜圈」口感在福岡天神區捲起狂熱，成為甜點愛好者爭相排隊的朝聖地。這間店舖從森林系的裝潢美學到櫥窗內精緻如工藝品的甜甜圈，處處流露出對細節的極致追求。其招牌「生冬甩」徹底顛覆了傳統油炸甜點的刻板印象，質地介於蛋糕與麵包之間，口感極致韌性且帶有驚人的濕潤感，咬下的瞬間能感受到麵糰與精緻內餡的完美融合。影片中詳盡介紹了包含開心果、雙重巧克力及香濃吉士醬等多樣化口味，即便在飽餐後享用依然令人驚艷。由於極高的人氣，午後時段常需排隊半小時以上，建議提早前往以免熱門口味售罄。買完後推薦前往斜對面百貨公司的花叢區尋找座位即時品嚐，感受那份入口即化的純粹甜蜜魅力。	https://youtu.be/v1wX7KCGQz4?t=822, https://youtu.be/fxAJJ-tmCtM?t=222s	https://maps.app.goo.gl/VDz9tdUW5oskLLAf8	
+一蘭 太宰府參道店	Ichiran Dazaifu Sando	美食餐廳	拉麵店	合格拉麵限定店、五角形碗與筷子、59公分超長麵體、考生的最強應援、全日唯一五角形合格碗、特長59公分合格麵、考生祈願聖地	福岡郊區 (太宰府)	太宰府站	這間位於太宰府天滿宮參道的一蘭拉麵店是全日本唯一的「合格」特色店，專為祈求考運的學生設計。不僅使用的碗是象徵「合格」諧音的五角形，連筷子、衣架甚至椅子的高度都隱含著過關的祝願。其特製的麵體長度更達 59 公分，日文讀音與「合格」極為接近。儘管湯頭維持一蘭經典的濃郁豚骨味，但這裡充滿巧思的應援設計讓用餐體驗充滿儀式感。作為全球唯一限定五角碗的門市，這裡不僅是考生的祈願聖地，更是遊客造訪太宰府必去的限定朝聖點。由於極具特色且位於熱門旅遊景點，尖峰時段往往大排長龍，是遊客在參拜行程中不可錯過的文化與美味結合點，讓品嚐拉麵也成為一種祈求好運的獨特儀式。	https://youtu.be/nZam6eLh_6w?t=1845, https://youtu.be/fe4Eockm0HM?t=1796	https://maps.app.goo.gl/zBWZVyCu18wyYiox6	
+il FORNO del MIGNON 博多店	il FORNO del MIGNON Hakata	美食餐廳	可頌專賣店	排隊名店迷你可頌、地瓜/巧克力/原味三種口味、博多站地標美食	福岡博多	博多站大廳內	這間位於博多車站內的可頌專賣店，長年以來都是車站內最具人氣的景點之一，大排長龍的景象已成為車站日常。其招牌是小巧玲瓏的迷你可頌，提供原味、巧克力與深受歡迎的地瓜口味。每一顆可頌的外層都刷上了甜美的糖霜，烤得極致酥脆，內裡則保持Q彈飽滿。地瓜口味更能在內餡吃到綿密的顆粒感，香氣逼人。由於店家出爐速度快且櫃檯人員動作迅速，即使排隊人潮多也能在短時間內買到。這款可頌非常適合作為搭車途中的點心或是回飯店後的宵夜，是來到博多車站必須「聞香下馬」的經典庶民美食。其便利的地理位置與穩定的高品質表現，使其成為博多最具代表性的排隊美食地標。	https://youtu.be/fe4Eockm0HM?t=569	https://maps.app.goo.gl/w18opi8PVqNy8zYM8	
+勝烈亭 新市街本店	Katsuretsutei Shinshingai Honten	美食餐廳	炸豬排專賣店	米其林推薦豬排店、黑毛豬料理、現磨芝麻醬汁、推薦腰內肉與大炸蝦、熊本必吃吉列豬扒名店、招牌黑豚豬扒與巨型炸蝦、需自行研磨金黃芝麻搭配秘製醬汁	熊本	辛島町站	作為熊本最具代表性的炸豬排老字號，勝烈亭曾榮獲米其林與食べログ百名店肯定。店內選用極高等級的黑毛豬，厚實的肉質帶有如舒肥般的軟嫩，咬下去油脂噴發卻不顯油膩。食客在等待主餐前需親自動手研磨香氣噴鼻的金芝麻，搭配特製的洋風或和風獨門醬汁，這種互動儀式讓用餐期待感倍增。除了豬排，其尺寸驚人且鮮甜彈牙的巨型炸蝦更是對食材本味的崇高致敬。餐廳內部環境展現出昭和時代的典雅氣派與名店細節，是追求頂級吉列料理的旅人來到熊本不可錯過的味覺朝聖點。	https://youtu.be/QQ6QvG7H28c?t=3679, https://youtu.be/w5LEbLOtG08?t=807s	https://maps.app.goo.gl/nbUo1zYZoEm9TTmz7	2
+川端通商店街	Kawabata-dori Shopping Arcade	購物採買	商店街	福岡最古老商店街、充滿在地生活感、必逛大創 DAISO 與蔬果店	福岡博多	中洲川端站	川端通商店街全長約 400 公尺，保留了博多古老的商業氣氛，與櫛田神社相連。街道兩側林立著傳統佛具店、和服店及平價藥妝店。這裡的大創 DAISO 雖然規模精簡，但商品針對在地生活需求精選。此外，街上的蔬果店常能買到便宜又大顆的當季水蜜桃。漫步於此能感受到福岡樸實的民情，適合在參拜完神社後，順道來此挖掘具有在地溫度的生活小物或品嚐平民小吃，是體驗福岡日常庶民魅力的絕佳去處。	https://youtu.be/Bzc_mmGL08c?t=911	https://maps.app.goo.gl/AhPBU48swutVwU2Y9	
+警固神社	Kego Shrine	觀光名勝	神社	坐落於繁華天神商圈中的古老神社、祭祀警固大神，保佑勝負與除厄、社務所與藍瓶咖啡完美融合、提供獨特的「微笑狐狸」石像景觀、市中心寧靜之所、設有足湯設施、藍瓶咖啡進駐、求神明守護	福岡天神	西鐵福岡（天神）站	警固神社坐落於福岡最繁華的天神商圈內，歷史與周邊摩登百貨交織出強烈的對比美感。這裡祭祀著警固大神，是市民尋求勝負保佑與除厄的心靈寄託場所。其最大特色是與現代設計感十足的「藍瓶咖啡」完美融合，通透的玻璃屋社務所讓人在啜飲精品咖啡時能靜靜觀察神聖境界與獨特的「微笑狐狸」石像。境內甚至設有足湯設施，讓逛累百貨公司的旅客能在此浸泡玉神水歇息。這種傳統信仰與當代咖啡文化的碰撞，讓忙碌的購物行程多了一份沉靜優雅的力量，成為都市鋼鐵森林中溫暖的心靈補給站。	https://youtu.be/JFrQM24tp-4?t=1681, https://youtu.be/064FtEAQlIU?t=3583	https://maps.app.goo.gl/ByewX8tDfigurPEx7	
+熊本城	Kumamoto Castle	觀光名勝	城堡、歷史古蹟	日本三大名城之一、天守閣內部設有數位展示與修復歷史解說、頂樓設有全景展望台、目前部分區域仍處於震後修復階段	熊本	熊本城・市役所前站	熊本城以其宏偉的建築格局與堅固的防禦工事聞名於世，雖然曾在強震中受創，但在精心修復後，其天守閣已展現出數位科技與傳統建築融合的新生面貌。旅客進入室內可以透過互動式屏幕深入了解加藤清正公的築城智慧，感受江戶時代武將的精神。登上天守閣頂層後，開闊的視野足以俯瞰整個熊本市景，將城市與自然的交界一覽無遺。雖然城內仍有部分石牆留有地震的痕跡，但這種新舊交疊的韌性反而賦予了熊本城更深層次的歷史厚度。	https://youtu.be/w5LEbLOtG08?t=474s	https://maps.app.goo.gl/eezkSTGQkQZ8feXe6	
+金鱗湖	Lake Kinrin	觀光名勝	湖泊	黃昏金色鱗光、溫泉匯入奇觀、湖畔櫻花美景、15分鐘散策路徑、冬季晨霧景觀、由布院代表性自然景觀、清晨可見晨霧瀰漫、午後湖面波光粼粼、湖畔設有水中鳥居與森林步道、晨間霧氣奇觀、湖中倒立鳥居、溫泉水湧入湖泊、森林系美景	大分 (由布院)	由布院商圈盡頭	金鱗湖是由布院溫泉鄉的靈魂地標，因湖底同時湧出溫泉與清水，巨大的冷熱溫差使其在晨間產生如夢似幻的氤氳霧氣。名稱源於黃昏時刻湖中魚兒鱗片閃爍如金光的奇景，湖畔矗立的水上鳥居與後方的神木、森林步道交織成絕美畫卷。沿湖散策一圈約需15分鐘，櫻花季時繁花倒映在清澈湖水，美不勝收。周邊散佈特色咖啡館與雜貨店，漫步其中能感受到溫泉小鎮獨有的慢活仙氣。這裡的空氣清冷純淨，是九州最具代表性的「靜心」勝地，無論是賞霧還是觀看隨光影變幻的湖色，金鱗湖都以其四季遞嬗的自然魅力，為整日旅程劃下最平和優雅的句點。	https://youtu.be/FkjDPYabFtY?t=729, https://youtu.be/xUglyk4MYtE?t=1320s, https://youtu.be/QQ6QvG7H28c?t=5517	https://maps.app.goo.gl/qeVixbfB1LsQ14KVA	
+福岡ロフト	Fukuoka LOFT	購物採買	生活雜貨店	文具與美妝天堂、日系精緻廚具與生活雜貨、深受當地人喜愛的選物店	福岡天神	天神站	位於 Mina Tenjin 內的 Loft 延續了該品牌對質感生活的極致追求。這層樓匯集了琳瑯滿目的創意文房具、美妝產品以及高品質的日系廚房器具如精緻茶壺與餐瓷。特別的是，這裡設有大規模的韓國化妝品專區，展現了日本目前的美容趨勢。店內的商品陳列極具設計感，不論是尋找極具品味的伴手禮，或是單純欣賞日本獨有的生活美學，Loft 都能提供無窮的靈感。其寬敞的空間讓顧客能悠閒地在各類雜貨間穿梭，是文具控與生活美學家在福岡絕對不能錯過的朝聖點。	https://youtu.be/nuUV1SJWD50?t=1506	https://maps.app.goo.gl/GDf2hGHWeY5iLVus8	
+Lopia 博多店	Lopia Hakata	購物採買	超級市場	位於Yodobashi Camera四樓、福岡博多區極具代表性的平價超市、推薦採買當季新鮮水果（如蘋果、梨子）、大干貝、生食級海螺、壽司拼盤、馬肉刺身及各式和牛、僅收現金、極致平價超市、半價和牛丼飯、宵夜採買聖地	福岡博多	博多站筑紫口	位於博多車站旁 Yodobashi 四樓的 Lopia 是福岡極具指標性的平價超市，被譽為旅人的物資補給聖地。這裡的水果區價格遠低於市中心百貨，提供飽滿的蘋果、梨子與當季葡萄；生鮮部更是精彩，供應高品質的海鮮拼盤與和牛，特別是生食級海螺與油脂豐厚的壽司組，CP 值極高。每到晚間更常出現半價和牛丼飯等折扣商品，吸引當地人與遊客瘋狂掃貨。店內僅收現金並設有自助包裝區，是想要在飯店享受豐盛和牛晚餐或大量採買日系零食作為伴手禮的必訪口袋名單，讓人能以在地物價深度體驗日本超市生活感。	https://youtu.be/ZOzGPW6gGEo?t=328s, https://youtu.be/fe4Eockm0HM?t=640	https://maps.app.goo.gl/kYGbsHkBSsFWxQgG7	
+麵屋 兼虎 福岡PARCO店	Menya Kanetora Fukuoka PARCO	美食餐廳	沾麵專賣店	超人氣魚介豚骨沾麵名店、沾汁極度濃厚且充滿魚粉鮮香味、麵條Q彈有勁、推薦加入特製魚介醋改變風味、建議提前20-30分鐘排隊、極致濃郁魚介沾麵、Q彈手打粗麵、最高10倍辣度挑戰	福岡天神	天神站 (PARCO B1F)	位於天神 PARCO 地下街的麵屋兼虎是震撼福岡沾麵界的指標名店，其靈魂在於近乎濃縮精華、充滿強烈魚粉鮮香與豚骨油脂的濃厚沾汁。手打的 Q 彈粗麵條能緊緊吸附每一滴醬汁，食客可先品嚐原味，再加入桌上的魚介醋或蒜粉體驗風味轉變。店內提供從基本到「十倍辣」的辣度選擇，雖然口味沈重且常需排隊 20-30 分鐘，但其厚切叉燒的焦香感與細緻的圍裙服務，讓排隊朝聖變得極具價值。這是一份對福岡沾麵文化的熱血詮釋，更是喜愛濃郁風味的旅人不可錯過的夢幻名店。	https://youtu.be/-ayNS6n7nuQ?t=811s, https://youtu.be/fe4Eockm0HM?t=1153	https://maps.app.goo.gl/BmzGtsoKczJqUDLE7	
+麵屋 兼虎 天神本店	Menya Kanetora Tenjin Honten	美食餐廳	沾麵專賣店	濃厚魚介豚骨沾麵、柴魚粉末香氣、提供熱湯淡化、必吃叉燒飯	福岡天神	西鐵福岡（天神）站	麵屋兼虎天神本店以其強烈的魚介豚骨雙重衝擊著稱，是福岡極受歡迎的沾麵地標。其沾汁中加入大量高質量的魚粉，搭配帶有柚子清香的濃稠湯底，口感極其鮮烈且具份量。店內的麵條較粗且極具嚼勁，能完美掛載每一滴精華醬汁。用餐完畢後，建議加入特製熱湯將剩餘沾醬化作清湯飲用，層次豐富令人滿足。此外，加點其香氣四溢、拌入大蒜醬油的特製叉燒飯，更是老饕間默認的豪華組合。這裡是追求沾麵極致濃郁體驗者的不二之選，讓人能完整體驗到魚介與豚骨交織出的味覺高峰。	https://youtu.be/m_eC0bTDFXU?t=494	https://maps.app.goo.gl/ip4U9EsfPVumPPyq8	
+Mina 天神	Mina Tenjin	購物採買	生活百貨、旗艦店	結合 GU, Uniqlo 與 Loft、福岡最大規模店鋪、一站式採買首選、全九州最大Uniqlo/GU、Loft生活雜貨、中古相機天堂、擁有福岡地區最大的 Uniqlo 與 GU 旗艦店、整層樓的 LOFT 雜貨店、集結 3COINS、ABC-MART 等生活機能店鋪、大型Loft(4樓)、文具控天堂、藥妝齊全、免稅櫃檯	福岡天神	天神站北側出口	重新改裝後的 Mina 天神已成為福岡天神地區規模最大的生活風格百貨。這裡入駐了全九州旗艦等級的 Uniqlo 與 GU，貨源齊全且空間極其寬廣，加上整層樓的 Loft 生活雜貨、3COINS 及 ABC-MART，滿足了從平價時尚到質感配件的一切需求。二樓隱藏的大型中古相機店更是攝影愛好者的挖寶聖地。商場內部裝修明亮、動線開闊，結合了便利的免稅流程，讓旅客能在同一棟建築內高效完成購物。不論是尋找當季潮流服飾、精緻文具還是專業相機器材，這裡都是天神商圈中功能性極強的一站式購物景點。	https://youtu.be/Bzc_mmGL08c?t=562, https://youtu.be/nuUV1SJWD50?t=1505, https://youtu.be/fe4Eockm0HM?t=918, https://youtu.be/JFrQM24tp-4?t=1286, https://youtu.be/v1wX7KCGQz4?t=381	https://maps.app.goo.gl/YbCoiUAuTLPG3DSw8	
+無印良品 キャナルシティ博多	MUJI Canal City Hakata	購物採買	生活雜貨店	商品品項極全、推薦即食秋葵湯與鯛魚炊飯料、設有韓國熱銷排行榜參考	福岡博多	博多運河城內	位於博多運河城內的無印良品展現了極致的日式生活美學，空間寬敞且氛圍沈穩。這裡除了基本的服飾與文具，食品區更是隱藏亮點，包含深受旅客喜愛的秋葵海帶即食湯、鯛魚炊飯料以及季節限定點心。店內更貼心地標註出特定產品在海外分店的熱銷排名，提供顧客精準的採買參考。此外其軟管裝卸妝乳與各式溫感入浴劑也是許多旅人的必補貨清單。在這裡逛街不僅是單純的消費，更像是一場對高品質簡約生活的深度沉浸體驗，讓人能在充滿設計感的環境中補足旅行所需的生活質感小物。	https://youtu.be/fe4Eockm0HM?t=918, https://youtu.be/JFrQM24tp-4?t=1286	https://maps.app.goo.gl/hxsBW9KXt7kLSgtd6	
+中洲屋台街	Nakasu Yatai	人氣打卡	屋台、深夜美食	溫馨熱鬧用餐氛圍、深夜美食補給、體驗在地屋台文化、各式道地小吃	福岡中洲	櫛田神社前站	中州屋台街是福岡夜晚最具代表性的風景，沿著運河邊排列的露天小攤販提供拉麵、串燒及關東煮等美食。這裡最迷人之處在於互不相識的食客們圍坐在狹小空間內，共享熱鬧且溫馨的用餐氛圍，充分體現福岡獨特的「路邊攤」庶民文化。隨著夜幕低垂，這裡人潮越發湧現，充滿煙火氣的街頭不僅是深夜美食的補給站，更是感受這座城市熱情與活力的最佳去處。無論是為了晚餐或是宵夜，食客都能在微醺的氣氛中，近距離體驗福岡最在地且具人情味的夜晚時光。	https://youtu.be/nZam6eLh_6w?t=587	https://maps.app.goo.gl/wxHty6fyh3ypGxjp7	
+大濠公園	Ohori Park	觀光名勝	城市公園、湖泊	福岡市中心的大型湖泊公園、提供天鵝船租借服務、環湖步道全長約 2 公里、適合散步或約會、園內設有數間景觀咖啡廳、福岡人休閒地標、環湖慢跑道、天鵝船體驗、寧靜放鬆氛圍	福岡大濠 / 百道	大濠公園站	大濠公園是福岡市民心中的綠洲，以巨大的中央水池為特色，擁有一座廣闊的湖泊與長約兩公里的環湖步道，散發著慵懶而優雅的氛圍。天空湛藍與湖水交織出極致的療癒感，是當地人慢跑、散步與情侶約會的首選。旅客可以在這裡租借天鵝船悠遊湖面，或是坐在面湖的長椅上享受午後陽光。公園內不僅自然資源豐富，更串聯了福岡市美術館與多間景觀咖啡館，景色隨季節變換，讓人能瞬間忘卻旅途疲憊，是一處能讓旅人找回心靈平靜、體驗道地福岡式慢生活的城市綠洲。	https://youtu.be/JFrQM24tp-4?t=275, https://youtu.be/064FtEAQlIU?t=2187	https://maps.app.goo.gl/kFGrZAht6jXmMuhm9	
+櫻井二見浦 夫婦岩	Sakurai Futamigaura's Meoto Iwa	觀光名勝	自然景觀、神社名勝	海中白色鳥居、象徵夫婦圓滿、夕陽百選勝地、壯麗海景	福岡郊區 (糸島)	糸島二見浦海岸	位在糸島二見浦海岸的「夫婦岩」，是兩座並列於海中的巨石，以一條巨大的注連繩相繫，象徵著良緣與夫婦圓滿。岩石前方矗立著一座潔白的鳥居，海水漲退潮間呈現出截然不同的神聖感。此處更是入選日本「夕陽百選」的勝地，當夕陽餘暉灑落在鳥居與夫婦岩之間時，美得令人窒息。附近設有多家景觀咖啡廳，非常推薦預約海景包廂，一邊享用精緻海鮮丼一邊近距離觀賞這份大自然與信仰交織的奇蹟景色。	https://youtu.be/nZam6eLh_6w?t=2413	https://maps.app.goo.gl/Y4UUJ2ZThLvWZnf2A	
+Seria	Seria	購物採買	百元商店	百元商店龍頭、生活雜貨應有盡有、位於車站商場高樓層、日用品挖寶	福岡博多	博多車站	位於博多車站旁商場高樓層的百元商店，幾乎所有商品都只要 100 日圓，提供極高 CP 值的購物體驗。從實用的廚房小物、旅行備品、可愛文具到日本零食與泡澡球，商品種類琳瑯滿目且空間規劃寬敞。這裡不僅是旅客補給生活所需與採買伴手禮的絕佳據點，其高品質且實用的生活雜貨更讓長輩也能逛得盡興。對於喜歡挖掘日系質感小物的遊客來說，這裡憑藉著便利的地理位置與極低預算的採購優勢，成為福岡市中心不可錯過的平價購物天堂。	https://youtu.be/nZam6eLh_6w?t=3133	https://maps.app.goo.gl/wN3uRTrqoD2g9UTeA	
+天神地下街	Tenjin Chikagai	購物採買	地下商場	歐式建築風格、避暑避雨、全長590公尺、人氣流行服飾、連鎖甜點店、九州最大地下街、連接各大百貨、歐風彩券行體育會、人氣甜點匯集、哈利波特風格建築、歐洲復古造景、設有特色造型廁所、匯集藥妝與精緻飾品店、全天候逛街聖地、精品服飾匯集、全長約 600 公尺，集結上百家店鋪、採 19 世紀歐式石磚街道風格	福岡天神	天神站	號稱九州規模最大的天神地下街，全長約 600 公尺，建築風格仿照 19 世紀歐洲街道，以紅磚牆面、復古路燈與大理石地面交織出宛如哈利波特電影般的魔幻氛圍。地下街貫穿整個天神核心區，完美連接了各大百貨與交通枢紐，是避暑避雨、全天候安心逛街的最佳去處。內部集結了上百間品牌專櫃，從精品服飾、人氣藥妝到精緻甜點舖如「RINGO」現烤蘋果派應有盡有。特別值得一遊的是其特色造型廁所，設計延續古典劇院風格。無論是尋找日系潮流、生活雜貨還是單純在典雅的石磚步道上漫步，這裡都為繁忙的購物行程提供了舒適且充滿藝術氣息的慢活空間，是福岡市中心最具代表性的潮流律動走廊。	https://youtu.be/v1wX7KCGQz4?t=761, https://youtu.be/nZam6eLh_6w?t=2827, https://youtu.be/064FtEAQlIU?t=1044, https://youtu.be/Bzc_mmGL08c?t=1001, https://youtu.be/nuUV1SJWD50?t=1140, https://youtu.be/JFrQM24tp-4?t=838	https://maps.app.goo.gl/68gvDNd3BGrLKK94A	
+THE OUTLETS KITAKYUSHU	THE OUTLETS KITAKYUSHU	購物採買	暢貨中心	九州最大規模Outlet、170個知名品牌、外籍遊客專屬券、直通Aeon Mall、免稅再折扣、九州最大最新 OUTLET、品牌種類豐富（BEAMS, UNITED ARROWS 等）、位於 Space World 原址、結合購物與休閒	福岡郊區 (北九州)	Space World 站	座落於北九州太空世界原址的 THE OUTLETS KITAKYUSHU，是目前九州地區最新、規模最大的暢貨中心。商場集合了大量國際一線品牌與日本本土高端設計專櫃，如 Polo Ralph Lauren 與 BEAMS 等，常年提供免稅後再折的極致優惠。採全平面露天散策式設計，空間開闊無壓迫感，並與巨大的 Aeon Mall 直接連通，讓旅客能一站式滿足高端精品與日常超市需求。園區內綠化景觀豐富，結合廣大的美食廣場與親子遊樂空間，將繁重的血拼轉化為悠閒的高質感異國漫步體驗，是北九州地區效率最高且最舒適的全方位休閒勝地。	https://youtu.be/8RCbgChtAaU?t=684, https://youtu.be/-bi37x7oHMQ?t=250	https://maps.app.goo.gl/LKsZwvXmu1QeH8Fq7	
+LaLaport 三井購物園區  福岡	Mitsui Shopping Park LaLaport Fukuoka	購物採買	大型購物中心	1:1 等身大 ν鋼彈、九州首間 KidZania、超大美食廣場、鋼彈基地、親子友善設施	福岡博多	JR 竹下站	這座於 2022 年開幕的大型購物中心已成為福岡的新地標，最引人注目的莫過於商場門口矗立的 1 比 1 等身大「v鋼彈」，其高達 24.8 公尺的雄偉姿態與每日定時的動態燈光秀吸引無數粉絲朝聖。商場內部空間寬敞，匯集了各類流行品牌與全九州最大的美食廣場，甚至引進了職業體驗設施 KidZania 與專為鋼彈迷設計的 GUNDAM SIDE-F。商場設計強調與在地共生，屋頂設有運動公園，完美結合了零售、教育與運動功能，是無論家庭出遊、情侶約會還是獨自採買都能滿足的一站式現代購物空間。	https://youtu.be/a8h7YVJmpiY?t=313	https://maps.app.goo.gl/Ctqq9j3rhEUZFTJr6	
+吉塚鰻魚屋	Yoshizuka Unagiya	美食餐廳	鰻魚飯專賣店	明治六年創業老店、炭火烤蒲燒鰻、獨門秘製醬汁、日本排名前三鰻魚飯店、那珂川河畔風景	福岡中洲	地鐵中洲川端站	創業於 1873 年的吉塚鰻魚屋，被許多老饕公認為福岡甚至全日本第一的鰻魚名店。其秘訣在於職人對「悶烤」與「炭火」溫度的完美掌控，使得鰻魚外皮微焦酥脆、肉質肥厚綿密且帶有深邃炭香。店家所使用的獨門秘製醬汁比例平衡、甜而不膩，能精準襯托出高品質鰻魚的原始鮮香。餐廳坐落於那珂川旁，用餐環境雅致，讓旅客能一邊享用傳承百年的珍餚一邊飽覽水畔風光。由於名聲極其響亮，建議提早前往領取號碼牌，這不只是一頓餐點，更是一場流傳百年的工藝傳承與味覺藝術的極致實踐。	https://youtu.be/L86x-2FrOl0?si=sJz-28Gcfc8iYial	https://maps.app.goo.gl/Cmyru1u4HjJ5HamY8	2
+友泉亭公園	Yusentei Park	隱藏秘境	日式庭園	筑前黑田藩別邸、純日式迴遊式庭園、大廣間湖畔絕景、體驗抹茶文化、楓紅名所	福岡城南區	友泉亭公車站	友泉亭公園原為筑前黑田藩主的避暑別邸，是一處遠離旅遊熱區的秘密寶地。公園核心是一座精緻的純日式池泉迴遊式庭園，中央湖泊倒映著四季變幻的楓葉與松樹。最迷人的時刻莫過於坐在江戶風格的「大廣間」榻榻米上，一邊品嚐現泡抹茶與精緻和菓子，一邊安靜凝望湖面與優游的鯉魚，享受那份與世隔絕的禪意。這裡觀光客相對較少，環境極其幽靜，是福岡市內少數能徹底沉浸在傳統大名文化中的景點。無論是追求深度攝影素材的旅行者，還是喜愛歷史建築與抹茶文化的文青，這裡都能提供一種優雅、高貴且極具質感的放鬆感。	https://youtu.be/c34uZvQVBXo?si=8WhNEAqE45K4Kdsx	https://maps.app.goo.gl/BW6f8FBh3R4KvtCw8	
+BOSS E・ZO FUKUOKA	BOSS E・ZO FUKUOKA	主題體驗	綜合娛樂大樓	絕景下滑梯、teamLab Forest、王貞治棒球紀念館、沉浸式互動藝術、數位感官饗宴	福岡大濠 / 百道	福岡巨蛋旁	位於福岡巨蛋旁的 BOSS E・ZO FUKUOKA 是一場結合尖端科技、光影美學與刺激冒險的感官盛宴。遊客可挑戰從大樓外牆 40 公尺高處急速滑下的「絕景下滑梯」，體驗震撼的俯衝快感，或進入「teamLab Forest」在幻彩構成的數位森林中透過手機 APP 捕捉虛擬動物。這裡不僅是攝影愛好者的創作天堂，更是一座能啟發無限想像力的數位藝術殿堂。此外，館內還設有與棒球歷史相關的王貞治紀念館，展現了福岡的體育底蘊。無論是追求感官刺激的冒險者，還是想沈浸在夢幻數位藝術中的旅人，這裡都能為福岡之旅增添前衛且驚豔的一章。	https://youtu.be/PEvJB3syixg?si=wdCHLoePo4Nc4pjS	https://maps.app.goo.gl/GG2aQFtGGiHSQbTv9	
+Greenland	Greenland	主題體驗	主題樂園	全日本遊樂設施數量第一、81項遊樂設施、多座巨型雲霄飛車、適合全年齡層、九州最大規模主題樂園	熊本	距離福岡市約1小時車程	Greenland 是九州最具代表性的主題樂園，以擁有高達 81 項遊樂設施位居日本之冠。這裡最令冒險者瘋狂的是多達 10 座以上的雲霄飛車，包含從高空俯衝的巨型設施與驚險的懸吊式飛車。除了刺激項目，園內亦規劃了大量溫馨的旋轉木馬、摩天輪與低齡童趣味區，能完美照顧到不同年齡層孩子的需求。樂園佔地極其廣闊，四季還會配合祭典舉辦大型煙火秀與角色表演，是從福岡出發進行一日探險的頂級選擇。這不僅是一座遊樂園，更是承載了九州家庭數十年回憶的歡樂殿堂，能讓親子在尖叫與歡笑中建立難忘的情感連結。	https://youtu.be/rG4jXeF5iAA?t=786	https://maps.app.goo.gl/bKAaiwwfc5VcwzGi8	3
+福岡麵包超人兒童博物館	Fukuoka Anpanman Children's Museum in Mall	主題體驗	親子樂園	幼兒界超級偶像、全室內恆溫空間、互動式表演秀、造型麵包屋、親子手作教室	福岡博多	博多河畔城 5-6 樓	位於博多河畔城內的麵包超人博物館，是家有幼童者的絕對首選。這裡完美還原了麵包超人的夢幻世界，提供多樣化的感官互動遊具與卡通街景，讓孩子能在安全舒適的室內環境中盡情放電。最受歡迎的莫過於每日定時舉辦的麵包超人與夥伴們的見面會與歌舞秀，現場熱烈的氛圍常讓小粉絲們興奮不已。園內販售的限定角色造型麵包不僅可愛度滿分，更是熱門的伴手禮選。由於採全室內設計且冷氣充足，無論酷暑或雨天都能提供舒適用餐與遊玩空間，是福岡市中心最具質感的親子育兒據點，讓大人的心靈在孩子純真的笑容中獲得徹底療癒。	https://youtu.be/lpUgmraNBqQ?si=t-NrmH9DQcwPLZcZ	https://maps.app.goo.gl/hS2KPreeLKVahVEU9	
+NOBOLT	NOBOLT	主題體驗	室內體育競技設施	全九州最大室內競技場、天空極限挑戰、高空滑索、攀岩與彈跳床、VR數位運動	福岡大濠 / 百道	瑪麗諾亞城旁	NOBOLT 是全九州規模最大的室內體育競技設施，佔地約 4,000 平方公尺，匯集了攀岩、高空滑索、彈跳床以及融合 VR 科技的數位運動。最吸引目光的是從天花板延伸而下的「天空極限挑戰」，遊客需穿戴專業背帶在數公尺高的結構上橫越障礙，極具視覺衝擊與心跳感。場館設有不同難易度的區域，讓孩子能挑戰體能極限並建立自信。雖然該區域的暢貨中心部分設施有所調整，但場館本身的活力與冒險體驗依然是動態旅遊的最佳解。這是一處結合了健康、冒險與娛樂的高科技場域，非常適合想要在旅程中大汗淋漓、收穫成就感的家庭。	https://youtu.be/N774PsscQ_I?t=96	https://maps.app.goo.gl/18TgxGVNDfSByxdU7	
+九州自然野生動物園	African Safari	主題體驗	野生動物園	叢林巴士近距離餵食、親手餵食獅子猛獸、全日本最大規模、小馬騎乘體驗、互動體驗區	大分	距離福岡1.5小時車程	九州自然野生動物園是日本罕見的大型野生動物園，最大的賣點是搭乘專屬的「叢林巴士」深入半開放式園區。遊客能與獅子、老虎、大象等猛獸僅隔一層鐵網，並使用特製夾子親手遞送食物給這些龐然大物，那種生命脈動的視覺震撼感是普通動物園無法比擬的。除了驚險的巴士之旅，園內還有可愛的小馬騎乘體驗以及能近距離觀察小動物的互動體驗區。對於想在福岡行程中加入野性冒險的家庭來說，這絕對是不可多得的高價值體驗。園區環境整潔且教育意義深遠，雖然車程稍遠，但其提供的感官記憶絕對值得專程造訪。	https://youtu.be/_CbRp-Mhyuc?si=R6Vttw_Qw6SeqicT	https://maps.app.goo.gl/EESKWzw4Cud7MjU87	
+三麗鷗和諧樂園	Harmonyland	主題體驗	主題樂園	凱蒂貓主題樂園、夢幻大遊行、戶外遊樂設施、三麗鷗角色合影、期間限定慶典	大分	距離福岡1.5小時車程	這裡是三麗鷗粉絲的夢幻天堂，不同於東京的彩虹樂園，和諧樂園是戶外型的樂園，擁有更多中大型遊樂設施如雲霄飛車與環園小火車。園內的靈魂是「閃亮彩色慶典」遊行，美樂蒂、酷洛米與布丁狗等經典角色皆會盛裝出席，聲光效果華麗且互動性強。樂園色調柔和粉嫩，處處皆是極佳的攝影背景。對於喜愛浪漫氣氛的孩子或充滿赤子之心的成人來說，這裡能提供一場純粹、甜美且完全沈浸式的童話體驗。建議選擇春季或秋季造訪，配合繁花盛開的裝飾，能拍出如雜誌封面般的完美旅遊照，是感受日系療癒文化的指標景點。	https://youtu.be/5Wx1UcP29yg?si=1RMA6Bjx7GI4Hxhe	https://maps.app.goo.gl/t4awtXfrz1q83iLC7	
+福岡玩具美術館	Fukuoka Toy Museum	隱藏秘境	博物館	木育概念空間、九州職人手作木製玩具、親子共同創作、博多屋台模擬、LaLaport 內	福岡博多	LaLaport 福岡 4 樓	位於 LaLaport 內的這座博物館並非一般的遊樂場，而是強調「木育」精神的美學空間。館內集結了來自九州各地的優質木材與職人工藝，打造出上千款設計精良、觸感溫潤的木製玩具。不同於電子遊具的喧囂，這裡強調透過指尖觸摸與創意想像來遊戲，館內更設有模擬博多屋台的木製小攤位，展現了極致的教育細節與生活感。資深館員會引導孩子探索不同的玩法，對於追求高品質教育體驗、希望在旅途中讓孩子靜心遊玩並培養美感的家長來說，這裡是一個充滿質感、安靜且充滿設計溫度的療癒景點，為繁華的商場行程增添一抹溫暖的木質芬芳。	https://youtu.be/QI_PE-LmFFc?si=lgd4LLZAG2avUuLB	https://maps.app.goo.gl/pYj5ocauavQB2MUTA	
+門司港懷舊區	Mojiko Retro	觀光名勝	歷史街區	明治大正時期建築群、藍翼門司吊橋、香蕉人像、特色燒咖哩、懷舊車站、海濱散策	福岡郊區 (門司港)	JR 門司港站	門司港曾是日本三大港口之一，至今仍完好保留了許多明治與大正時期的西式建築，瀰漫著濃郁的浪漫懷舊氣息。親子同遊最推薦觀看全日唯一會隨音樂開啟的行人吊橋「藍翼門司」，以及在復古街道中尋找有趣的香蕉人雕像合影。這裡的美食靈魂是「燒咖哩（焗烤咖哩飯）」，焦香的起司與濃郁醬汁絕對能征服旅人的胃。漫步在海濱步道，遠眺對岸下關市的風景，能感受到一種與福岡市區截然不同的優雅慢活步調。這是一個結合了港口歷史、歐式美學與獨特飲食文化的景點，是非常適合安排北九州一日遊的核心地標。	https://youtu.be/o6EkcSur88k?si=aIT7HbYJqHNrKQoM	https://maps.app.goo.gl/HR2eVgKiL36VqNjP7	
+ASYOBLE	ASYOBLE	主題體驗	室內遊樂場	金氏紀錄巨大夾娃娃機、未來感雲朵蹦蹦床、互動藝術遊具、放電聖地、位於 The Outlets 內	福岡郊區 (北九州)	THE OUTLETS KITAKYUSHU	ASYOBLE 是隨 The Outlets Kitakyushu 同步開幕的新形態室內遊樂場。這裡最狂的莫過於獲得金氏世界紀錄認證、超巨大的夾娃娃機，以及設計極具未來感的「雲朵蹦蹦床」。場館內有許多由知名設計團隊打造的互動藝術遊具，部分區域甚至提供免費遊玩，是現代親子旅遊的最高效「放電聖地」。由於場館位於大型暢貨中心內，家長可以在採購折扣精品之餘，讓孩子在這裡安全地探索科技與遊戲。其充滿活力的色彩與創新的空間設計，使其不僅是孩子的樂園，更是最新潮的社群打卡熱點，展現了娛樂與美學的完美交融。	https://youtu.be/fe4Eockm0HM?t=1375	https://maps.app.goo.gl/uvWKyJFqMeD83YnW6	2
+TOTO 博物館	TOTO Museum	觀光名勝	博物館	未來感流線型建築、衛浴文化美學、互動式歷史展覽、馬桶車展示、免費參觀、獨特限定商品	福岡郊區 (小倉)	貴船町公車站	這是一個能讓孩子與大人同時感到驚奇的獨特景點。作為世界頂級衛浴品牌 TOTO 的創立地，這座博物館以純白、流線型的未來感建築外觀著稱，本身即是一件大型工業設計作品。內部生動展示了從明治時期至今的衛浴演進史，甚至還有為馬拉松比賽設計的移動馬桶車，極具趣味性與教育意義。館內環境極其整潔舒適，孩子們能透過互動裝置了解水資源的重要性與生活美學。臨走前別忘了在紀念品店買一個可愛的馬桶造型磁鐵。這是這趟充滿「設計力」與「職人精神」旅程的最佳回憶，也是福岡周邊最高質感的免費參觀首選。	https://youtu.be/Lj6BV6aF5pI?si=EhyChPk557uCw4VL	https://maps.app.goo.gl/FZQZQbboHBzNmLWL7	
+福岡市科學館	Fukuoka City Science Museum	主題體驗	科學館	九州最大 8K 星球儀劇場、互動科學遊戲、創意工作坊、六本松熱門新地標	福岡藥院 / 六本松	地鐵六本松站	位於六本松蔦屋書店上方的福岡市科學館，是福岡市區內最高規格的室內親子知性景點。館內擁有全九州最大的 8K 高解析度天象廳（Planetarium），能讓人沈浸在震撼的星空美景中。互動展區規劃了大量的物理、通訊與未來科技遊戲，透過動手實作讓孩子在遊戲中學習科學。其地理位置優越，逛完科學館後可以順道前往樓下的蔦屋書店享受閱讀與咖啡時光。這裡環境設計優雅且充滿科技感，是下雨天或暑假期間躲避戶外惡劣天氣、卻能同時滿足娛樂與深度教育需求的最高級選擇，展現了福岡作為文教都市的高質感面向。	https://youtu.be/sV3qDdNZkUY?si=Mhirco4Sg4tPL11e	https://maps.app.goo.gl/uk4J7UPkjMhYRzmU6	
+博多拉麵 Shin-Shin 博多站店	Hakata Ramen Shin-Shin	美食餐廳	拉麵店	福岡排隊名店、極細麵條、甘甜濃醇湯頭、深受藝人喜愛、博多站內便利、超豐富下酒菜	福岡博多	博多站內 DEITOS	儘管福岡拉麵競爭激烈，Shin-Shin 在市民心中始終佔有不可取代的地位。這家店以其獨特的「極細」麵條與經過長時間熬煮、帶有微妙甘甜感的豚骨湯頭聞名。不同於傳統豚骨拉麵的重口味，其湯頭極其滑順，連小朋友也能輕鬆完食。博多站分店位於 DEITOS 商場內，位置極其便利。除了經典拉麵，其炒拉麵（Yaki Ramen）與各式博多特色的居酒屋料理也非常出色，牆上掛滿了日本藝人的簽名見證其高人氣。這是一間充滿博多人熱情、口味溫潤且絕對不踩雷的靈魂餐廳，完美體現了福岡「純情」且充滿活力的美食性格。	https://youtube.com/shorts/MhrO65M3fEc?si=igAy5QHed-Z855S5	https://maps.app.goo.gl/RuY7TKoHpbM9hjR76	
+博多拉麵 Shin-Shin 天神本店	Hakata Ramen Shin-Shin Tenjin Honten	美食餐廳	拉麵店	福岡排隊名店、純情拉麵本店、極細麵條、甘甜濃醇湯頭、深受藝人喜愛	福岡天神	天神站附近	天神本店是 Shin-Shin 拉麵的發跡之地，維持著最道地的博多屋台精神，牆上掛滿了無數日本藝人的親筆簽名。這裡主打的極細麵條能完美吸附甘甜濃郁的豚骨湯頭，每一口都是溫潤的療癒感。除了招牌拉麵，炒拉麵（Yaki Ramen）與各式豐富的下酒菜亦是本店的靈魂美味。相較於百貨店，本店擁有更濃厚的在地氛圍與職人氣息，吸引著海內外老饕前來排隊。這裡不僅是一個美食景點，更是一個充滿福岡日常熱情與活力、口味絕對穩定且不踩雷的食之座標，是體驗博多拉麵文化的核心首選。	https://youtu.be/5KAHH0noasY?si=K2NWuKxiGCExLYnq	https://maps.app.goo.gl/2GJQcDPpoPj64QTR7	
+樂水園	Rakusuien	隱藏秘境	日式庭園	博多塀瓦片圍牆、水琴窟清脆聲響、抹茶與和菓子、江戶情懷別墅、都市歇腳處	福岡博多	住吉神社旁	難以想像在距離繁華博多車站僅 15 分鐘步程的地方，隱藏著這座靜謐的純日式池泉迴遊式庭園。這原本是明治時期的富商別墅，其最具特色的是利用古城瓦片堆疊而成的「博多塀」圍牆。遊客只需支付極低廉的費用，即可在大廣間的榻榻米上坐下，一邊聆聽水琴窟清脆的響聲，一邊享用現刷的抹茶與精緻和菓子。這裡遊客稀少，空氣中瀰漫著百年老樹的芬芳，對於在繁華商場逛累了的旅人來說，是一個極高品質的歇腳處。能在現代化的博多核心地帶瞬間穿越回江戶情懷，樂水園是這座城市送給懂得慢活旅客的一份寧靜禮物。	https://youtu.be/oH5viOSfPoE?si=69tOap7Hfbtx9U4u	https://maps.app.goo.gl/XE6N8ckKDSg2qJ8K9	
+福岡市動物園	Fukuoka City Zoo & Botanical Garden	主題體驗	動物園	2023年全新改裝、垂直斜面電梯、水獺與小熊貓、溫室植物園、空中步道連接	福岡大濠 / 百道	地鐵櫻坂站	這是一座隱藏在市中心山丘上的寶藏樂園，2023 年完成大規模改裝後，整體質感與設施大幅提升。園內最受歡迎的是透明玻璃隧道設計，能近距離觀察水獺戲水與企鵝游泳的姿態。新設的垂直斜面電梯讓推嬰兒車的家長能輕鬆穿梭於不同高度的展區，極其友善。植物園區則擁有壯觀的溫室與季節性花圃，與動物園區以空中步道連接，提供半日以上的充實行程。這裡的規劃不僅考慮到動物福祉，更充滿美學細節，是高品質親子教育與放鬆心情的最佳去處，讓孩子在寓教於樂中探索大自然的奧妙與生命之美。	https://youtu.be/6HHhrQ7FZWo?si=k3lplE5gmL_ezNWM	https://maps.app.goo.gl/7WTAGjmfZjiRbZwm6	
+天婦羅 Hirao 大名店	Tempura Hirao Daimyo	美食餐廳	天婦羅專賣店	免費無限供應醃漬烏賊、極致酥脆現炸、平價天婦羅之王、吧檯職人服務	福岡天神	天神站附近	被譽為「福岡人精神食糧」的天婦羅 Hirao，以極高 CP 值與極致新鮮的食材聞名全日本。店內採獨特的吧檯設計，師傅會將剛炸好、熱騰騰的天婦羅逐一送到客人面前，確保每一口都是巔峰狀態的酥脆口感。除了主角天婦羅，這裡真正的亮點是桌上免費無限供應的辛子醃漬烏賊（Shiokara），鹹香甘甜的味道極其下飯，許多老饕甚至是為了這道配菜專程造訪。大名店位於繁華的天神商圈，環境明亮且節奏快，是體驗福岡在地排隊文化與庶民美食最高境界的必訪之地，無論大人小孩都能在這裡獲得極大的味覺滿足感。	https://youtube.com/shorts/9t-TPpRaOV8?si=OfbluZtEpjwD5CZy	https://maps.app.goo.gl/dnM8jG9xdq9f5CvF6	2
+稚加榮 福岡本店	Chikae Fukuoka	美食餐廳	海鮮料亭	九州最大級室內活魚水槽、和服職人服務、料亭級精緻料理、超值限量午餐、明太子醬始祖	福岡中央區 (天神/大濠)	大名區	稚加榮是福岡最具傳奇色彩的海鮮料亭，店內中央設有一個巨大的活魚水槽，各種珍稀魚類游弋其中，場面極度壯觀。遊客可以坐在水槽旁的長吧檯，近距離觀看職人現點現切的精湛刀工。這裡最著名的是每日限量的商業午餐，能以驚人的平實價格品嚐到料亭水準的生魚片與天婦羅。值得一提的是，店內提供的明太子醬更是一絕，不僅口味細膩且極具代表性。在充滿歷史感的優雅和式空間內用餐，配上穿著傳統和服的專業服務人員，這不僅是一頓飯，更是一場體驗九州極致待客之道與海味藝術的盛宴。	https://www.youtube.com/watch?v=jx7qsw7-i1k?t=449	https://maps.app.goo.gl/ZURoBKBg4gT1ucNi8	
+舞鶴公園	Maizuru Park	觀光名勝	公園	黑田官兵衛築城遺址、櫻花祭名所、大天守台觀景、歷史步道、大型中央草坪	福岡中央區 (天神/大濠)	大濠公園旁	緊鄰大濠公園的舞鶴公園，是當年黑田長政修築「福岡城」的舊址。雖然多數木造建築已不復存在，但壯觀的石牆、護城河以及保存完好的多聞櫓，仍展現出當年天下名城的氣魄。登上天守台遺址，可以俯瞰整個博多灣與市中心全景。公園內擁有廣闊的草坪與林蔭步道，是市中心極佳的野餐與漫步場所。每逢櫻花季節，這裡成千上萬株櫻花與古城石牆交織，美不勝收。對於追求深度歷史感的遊客，這裡是探索「福岡」名稱起源的關鍵之地，能在靜謐的古城氛圍中感受跨越四百年的歷史心跳。	https://youtu.be/S_PL0XLEZrc?t=180	https://maps.app.goo.gl/zHY4TeBw2D7tSgU78	
+福岡市博物館	Fukuoka City Museum	觀光名勝	博物館	國寶「金印」收藏地、漢倭奴國王印、亞洲文化交流史、互動式民俗展、高品質特展	福岡西區 / 早良區	福岡塔旁	位於百道濱地區的高級文化設施，這座博物館最珍貴的館藏莫過於中學歷史課本必提的國寶——「漢倭奴國王」金印。館內透過高科技展示與精緻模型，詳盡介紹了福岡自古作為日本與亞洲對外窗口的經貿歷史。對於孩子，博物館設有「體驗學習室」，可以觸摸不同亞洲國家的傳統樂器與玩具，極具趣味性。其壯觀的現代建築與門前的巨大噴水池相得益彰，與鄰近的福岡塔構成了一處完美的文化遊憩帶。這裡不僅是學術研究的殿堂，更是高品質旅遊者快速了解九州歷史與國際地位的最佳窗口，能為旅程增添豐富的知性厚度。	https://youtu.be/l-nDe8wd0Xk?si=ZHBxhWufte18QgVa	https://maps.app.goo.gl/DfcDKWi5YDnF2eYa6	
+一蘭之森	Ichiran no Mori	主題體驗	拉麵工廠	一蘭拉麵工廠參觀、限定市場拉麵、拉麵博物館、糸島限定伴手禮、免排隊體驗	福岡郊區 (糸島)	糸島半島中心	這裡是一蘭拉麵全球唯一的生產基地與博物館，佔地廣闊且充滿教育意義。遊客可以透過玻璃窗窺探拉麵自動化生產的過程，並在博物館內了解一蘭從創立至今的秘辛。最核心的魅力在於能品嚐到工廠直出的「市場拉麵」，其風味與市中心店鋪略有不同，且通常無需長時間排隊。周邊綠意盎然，還設有大型伴手禮商店，能買到許多此處限定的產品。對於熱愛日本拉麵文化的家庭來說，這裡不僅能滿足味蕾，更是能深刻了解職人精神與現代工業結合的絕佳場景，是糸島自駕行程中兼具知識與美食的重要節點。	https://youtu.be/AgSqlRpRFq8?t=300	https://maps.app.goo.gl/XyU45nLkqw61fAFX6	
+極味屋 福岡PARCO店	Kiwamiya Fukuoka PARCO	美食餐廳	漢堡排專賣店	石燒和牛漢堡排、DIY 熟度調整、福岡排隊名店、高品質伊萬里牛、CP值極高	福岡中央區 (天神/大濠)	天神站	極味屋是福岡極具代表性的「互動式」美食，以其鮮嫩多汁的伊萬里牛漢堡排風靡全球旅客。餐點上桌時漢堡排僅表面微焦，顧客需自行撥下一塊，放在高溫黑石上加熱至喜好的熟度，不僅能鎖住肉汁，更增添了烹飪的樂趣。店內提供的沾醬種類豐富，與鮮甜的和牛油脂完美契合。儘管位於百貨地下街且空間較窄、排隊時間較長，但那種在鐵板上滋滋作響的感官誘惑與入口即化的美味，絕對值得等待。這是一場結合視覺、聽覺與味覺的饗宴，非常適合想體驗福岡獨特餐飲文化的旅人。	https://youtu.be/AmiXK0dHijQ?si=V_xUIK6QfD051U90	https://maps.app.goo.gl/VDiAFcTzRoUsPZQN8	
+太宰府遊園地	Dazaifu Amusement Park	主題體驗	遊樂園	復古氛圍主題樂園、適合低學齡幼童、懷舊木製遊具、太宰府天滿宮境內、無需排長隊	福岡郊區 (太宰府)	太宰府天滿宮旁	這是一座充滿「昭和懷舊感」的小型遊樂園，緊鄰著名的太宰府天滿宮。雖然沒有刺激的高科技設施，但其色彩繽紛、設計溫馨的旋轉木馬、小火車與緩慢滑行的過山車，反而非常適合 2 至 8 歲的幼童，讓家長無需擔心過於驚險的場面。園區規模適中，讓父母能輕鬆照看孩子而不會感到疲憊。其獨特的歷史感與神社建築相互輝映，營造出一種時光倒流的溫馨感。對於帶著小小孩拜訪天滿宮的家庭，這裡是一個完美的獎勵站，能讓孩子在參拜歷史遺跡後，擁有一個充滿純真快樂的下午。	https://youtu.be/AO7Ve4k0ebg?t=120	https://maps.app.goo.gl/NHE4fwhUvuZyGoBQ6	
+博多町家故鄉館	Hakata Machiya Folk Museum	觀光名勝	博物館	明治時期傳統建築、博多織現場表演、古老民俗體驗、互動式歷史展示、精緻傳統伴手禮	福岡博多	櫛田神社斜對面	故鄉館由明治時期的排屋建築構成，生動地再現了博多在 19 世紀末至 20 世紀初的庶民生活。遊客可以在此近距離觀看世界聞名的「博多織」職人現場操作織布機，其複雜的圖案與清脆的聲響令人驚嘆。館內展覽豐富，包含祭典歷史、地方語言與傳統工藝展示，許多展區都設有互動裝置，讓歷史變得平易近人。館內的禮品店精選了高品質的傳統工藝品，是挑選具備福岡靈魂伴手禮的最佳地點。緊鄰櫛田神社的地理優勢，使其成為博多文化散策的靈魂核心，是提升旅程知性層次的首選地標。	https://youtu.be/eYKbs4AxkQs?si=X0PLzZsA7hQxq0Kl	https://maps.app.goo.gl/thx4A1SYBJ3dt8VR6	
+樂天地	Motsunabe Rakutenchi	美食餐廳	牛腸鍋餐廳	韭菜山景、元祖級牛腸鍋、特製濃厚湯底、高CP值名店、福岡必吃代表	福岡中央區 (天神/大濠)	天神站	提及福岡的「靈魂料理」，樂天地的牛腸鍋以其震撼視覺的「韭菜山」聞名於世。堆得高聳入雲的新鮮韭菜下，是經過長時間熬煮、充滿食材精華的特製醬油湯底。這裡採用的牛腸極其新鮮，口感Ｑ彈且越嚼越香，與鮮甜的高麗菜達成完美平衡。樂天地堅持選用最道地的食材，並提供極具競爭力的價格，是當地人與資深遊客的首選名店。用餐最後，務必點一份強棒麵（Champon）加入剩餘的精華湯汁中，那種吸收了所有脂肪甘甜與蔬菜鮮美後的滋味，是福岡之旅最令人滿足的結尾。這是一家充滿在地熱情、氣氛熱絡且味覺衝擊十足的必訪餐廳。	https://youtu.be/rNSsciH_yFA?si=ellvnCJxo7rEYfAl	https://maps.app.goo.gl/pBi2yxurqTeHv7sc9	2
+小倉城	Kokura Castle	觀光名勝	城堡	北九州象徵、罕見「唐造」天守、細川忠興築城、勝山公園、歷史互動式體驗	福岡郊區 (北九州)	JR 小倉站	作為北九州市的文化地標，小倉城擁有日本罕見的「唐造」式天守建築，其五樓比四樓大出的設計在視覺上極具特色。城內經過現代化改裝，提供豐富的互動式展示，孩子可以體驗乘坐大名的轎子或參與數位劍術遊戲，寓教於樂。圍繞城堡的「勝山公園」綠意盎然，是當地人最愛的休憩場所。鄰近的小倉城庭園與著名的旦過市場更能讓人體驗到北九州特有的繁華與市井活力。對於想從福岡出發安排一日輕旅行的家庭，小倉城不僅能提供豐富的歷史知識，其周邊完善的商業設施也讓旅遊品質更具深度與便利性。	https://youtu.be/OGWe5jL9Lq4?t=120	https://maps.app.goo.gl/XGuxnDJonS6NuT2L6	2
+愛宕神社	Atago Shrine	觀光名勝	神社	福岡最古老神社、日本三大愛宕、福岡塔絕景觀測點、開運與結緣聖地、夜景秘境	福岡西區 / 早良區	地鐵室見站	坐落在愛宕山頂的神社，擁有超過 1900 年的歷史，是福岡地位極高的古老聖地。這裡最讓資深玩家稱道的是其「絕景位置」，由於地勢居高臨下，站在境內可以毫無遮蔽地俯瞰博多灣、福岡塔以及整個百道濱海岸線。白天能感受海風徐徐，夜晚則是觀賞福岡都會霓虹的最佳夜景秘境。神社以祈求開運、結緣及斷絕惡習聞名。相較於觀光客雲集的市中心神社，愛宕神社散發著一種優雅、尊貴且神聖的氣息。對於追求高品質攝影背景或是想要在高處俯瞰福岡城市輪廓的旅人，這裡是絕不可錯過的隱藏景點。	https://youtu.be/y6fndWBj3cY?t=100	https://maps.app.goo.gl/AmWpE1e8rfUyxi5y9	
+Kirby Cafe 福岡	Kirby Cafe Hakata	美食餐廳	主題餐廳	全日本僅兩家、星之卡比主題餐點、極致可愛視覺、博多限定周邊、需預約名店	福岡博多	博多運河城 B1F	這是一間讓尖叫聲停不下來的主題餐廳，將星之卡比的世界完美實體化。每一道餐點都充滿創意與巧思，無論是粉紅圓潤的卡比漢堡還是充滿細節的瓦多迪蛋包飯，視覺美感都達到了藝術等級。餐廳內部的裝飾以巨大的「威斯比大樹」為核心，營造出溫馨夢幻的氛圍。除了餐飲，附設的商店販售多款僅在此處才能買到的限定餐具與玩偶。由於其極高的人氣與高品質的服務，往往一釋放預約名額便秒殺。對於追求「極致主題體驗」與「精緻社群拍照素材」的旅人來說，這裡是福岡最難預約卻最值得造訪的主題聖地。	https://youtu.be/w3T_HvsURSc?t=150	https://maps.app.goo.gl/kJfMu6awypTY3RDu5	
+ONE PIECE 航海王專賣店 福岡店	ONE PIECE Mugiwara Store Fukuoka	購物採買	動漫專賣店	航海王官方專賣店、1:1 角色模型、九州限定周邊、福岡限定明太子聯名品	福岡中央區 (天神/大濠)	福岡 PARCO 7F	專為《航海王》粉絲打造的官方據點，門口矗立著震撼力十足的魯夫 1:1 模型，瞬間將訪客帶入大航海時代。店內匯集了海內外最豐富的航海王商品，從高精細度的公仔、原畫週邊到生活小物一應俱全。最特別的是這裡有許多結合福岡在地文化的限定商品，例如穿著福岡應援服的角色周邊或是與名產「明太子」聯名的趣味物件。店內裝潢融入了海軍與海賊的對比元素，對於動漫愛好者來說，這裡不僅能滿足收藏慾望，更能深刻感受到福岡作為動漫文化重鎮的熱情與活力。	https://www.youtube.com/watch?v=A51s6xAezbg?t=580	https://maps.app.goo.gl/Mf7Mh4TgrPkiNhYH7	
+JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年Jump官方店、熱血動漫周邊、排球少年/咒術迴戰/鬼滅之刃、作者手稿展示	福岡博多	博多運河城 B1F	如果你是動漫迷，絕對不能錯過這間集結《週刊少年Jump》所有熱門 IP 的聖地。店內充滿了熱血與動力的氛圍，展示了包括《七龍珠》、《灌籃高手》到現今最紅的《我推的孩子》等多樣化商品。店內不定期展示作者的原稿複製品與簽名版，讓購物的知性層次大幅提升。對於高品質旅遊來說，這裡代表了日本動漫工業的最前線。店內商品的設計感極強，從穿搭服飾到生活雜貨都具備高度的實用性與設計美感。這是一處讓遊客能瞬間感受到日本流行文化心跳的地方，更是挑選具備高度「潮流感」伴手禮的首選位置。	https://youtu.be/mni1GkMsPQQ?si=xkoq0snqH9AUl_gf	https://maps.app.goo.gl/1YUy2bWzufXYJhrE6	
+筥崎宮	Hakozakigu Shrine	觀光名勝	神社	日本三大八幡之一、勝運守護神、重要文化財「伏敵門」、古董市集、四季花卉	福岡東區	地鐵箱崎宮前站	擁有超過千年歷史的筥崎宮，是福岡極具分量的精神支柱。這裡以「勝利之神」著稱，連當地的福岡軟銀鷹隊與福岡黃蜂隊在球季前都會前來參拜。壯觀的樓門上掛著著名的「敵國降伏」匾額，展現出強烈的歷史威嚴感。神社境內四季皆美，尤以夏季的繡球花祭與百合花祭最為動人。此外，這裡定期舉辦的「風潮古董市集」是全九州最大規模，吸引無數喜愛高品質古物的收藏家到訪。走在寬闊的表參道上，能感受到一股穿越時空的沈靜力量，是深度體驗日本傳統祭禮文化與感受「必勝」信念能量的最佳場所。	https://youtu.be/U0DvuICj8ss?si=aCHQz9Slpfc7MmSW	https://maps.app.goo.gl/7Ar4F2hi9pusmgDE7	
+海之中道海濱公園	Uminonakamichi Seaside Park	觀光名勝	公園	四季壯麗花海（如春季粉蝶花）、佔地廣闊適合單車環遊、動物森林可近距離接觸、大型兒童遊樂場設施。	福岡東區	海之中道車站、海洋世界海之中道	位於福岡市東區的「海之中道海濱公園」，是一座佔地廣達約 300 公頃的國營公園，坐落於連結博多市區與志賀島的沙洲之上，擁有玄界灘與博多灣的絕美雙向海景。園內以四季更迭的壯麗花海聞名，特別是春季盛開的「粉蝶花」將山丘染成一片湛藍，與天空連成一線，是福岡最具代表性的視覺盛宴。除了視覺饗宴，園內的「動物森林」更提供近距離觀察水豚、袋鼠的療癒體驗，加上規劃完美的單車道與超大型溜滑梯，使其成為親子旅遊與自然愛好者的首選聖地。這裡展現了繁忙都會中難得的寬闊感與生態多樣性，無論是午後野餐或是整日深度遊覽，都能讓旅人在海風徐徐中找回身心的平衡。	https://youtu.be/I-yTHG5hKa8?si=CVezkw30YwHhPOfQ	https://maps.app.goo.gl/BaZEnugajmkmd9sT8	1`; 
+        let attractions = [], userRatings = {}, activeFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, sectionStates = { tags: false, reg: false, cat: false, catType: false, recom: false };
+        let tagDefs = [], spotToTags = {}, tagChecklist = new Set();
+        const ICON_MAP = { '美食餐廳': '🍽️', '購物採買': '🛍️', '觀光名勝': '⛩️', '主題體驗': '🎪', '人氣打卡': '📸', '隱密秘境': '🤫' }, uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
+        let tempAddRating = ''; 
+
+        const getVal = (v, fallback) => (v && v.trim() !== "") ? v : fallback;
+        
+        // 🚀 [修復 4] Icon 邏輯：配對不到即顯示星星
+        const getIcon = (cat) => {
+            const c = (cat || "").trim();
+            return ICON_MAP[c] || '⭐';
+        };
+
+        function initAppData() {
+            const baseData = parseTSV(RAW_PASTED_DATA);
+            let userSpots = [];
+            try { userSpots = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); } catch(e) { userSpots = []; }
+            attractions = [...userSpots.slice().reverse(), ...baseData];
+            try { userRatings = JSON.parse(localStorage.getItem('zine_ratings') || '{}'); tagDefs = JSON.parse(localStorage.getItem('zine_tag_defs') || '[]'); spotToTags = JSON.parse(localStorage.getItem('zine_spot_tags') || '{}'); } catch(e) { }
+        }
+
+        function parseTSV(rawText) {
+            if(!rawText || !rawText.trim()) return [];
+            return rawText.trim().split(/\r?\n/).map((line, i) => {
+                const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
+                if (i === 0 && (cols[0].includes("中文") || cols[2].includes("類別"))) return null;
+                if (!cols[0]) return null;
+                const safeId = "b-" + i + "-" + Math.random().toString(36).substr(2, 4);
+                return { id: safeId, cn: cols[0], en: cols[1], cat: cols[2], catType: cols[3], points: cols[4], reg: cols[5], nearby: cols[6], intro: cols[7], ref: cols[8], nav: cols[9], baseRecom: cols[10] };
+            }).map(item => item ? { ...item, icon: getIcon(item.cat) } : null).filter(item => item !== null);
+        }
+
+        function generateCardHtml(item, isEditMode = false) {
+            const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+            const idx = (uniqueRegs.findIndex(r => (item.reg || "").includes(r)) % 5) + 1;
+            const tId = spotToTags[item.id];
+            const tDef = tagDefs.find(d => d.id === tId);
+            const tagHtml = (tDef && tDef.name) ? `<div class="card-tag-row active"><span class="tag-mini-pill">${tDef.name}</span></div>` : `<div class="card-tag-row"></div>`;
+            const clickFn = isEditMode ? `openEditModal('${item.id}')` : `openDetail('${item.id}')`;
+            return `<div class="card btn-bounce" onclick="${clickFn}">
+                <div class="reg-rect-tag" style="background:var(--palette-${idx > 0 ? idx : 1})">${getVal(item.reg, "未指定")}</div>
+                <div class="recom-sticker btn-bounce ${rating ? 'rated' : 'empty'}" onclick="event.stopPropagation(); toggleRating('${item.id}')">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '未評' }[rating]}</div>
+                <div class="title-row"><span class="card-icon">${getIcon(item.cat)}</span><span class="name-cn">${item.cn}</span></div>
+                <span class="name-en">${getVal(item.en, "---")}</span>
+                ${tagHtml}
+                <div class="card-bottom-text">${getVal(item.catType, "---")}</div>
+            </div>`;
+        }
+
+        // 🚀 [修復 3] 五維精準搜尋
+        function render() {
+            const grid = document.getElementById('card-grid');
+            if (!grid) return; // 安全檢查
+            
+            // 🚀 關鍵 1：搜尋關鍵字先做 Unicode 正常化 (NFC)，確保中文比對成功
+            const query = (document.getElementById('search-input').value || "").normalize('NFC').trim().toLowerCase();
+            const sel = activeFilters;
+            let count = 0;
+
+            grid.innerHTML = attractions.map(item => {
+                const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+                if (rating === '0') return '';
+
+                const itemTagId = spotToTags[item.id] || "untagged";
+                const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
+
+                // 🚀 關鍵 2：撈出 Tag 名，同樣做 NFC 正常化，解決中文搜唔到嘅問題
+                const tDef = tagDefs.find(d => String(d.id) === String(itemTagId));
+                const tagName = (tDef && tDef.name) ? String(tDef.name).normalize('NFC') : "";
+
+                // 🚀 關鍵 3：串連你要嘅六個搜尋維度 (中、英、區、類、內、Tag 名)
+                // 每個欄位都做 NFC 正常化，確保萬無一失
+                const searchStr = [
+                    item.cn, item.en, item.reg, item.cat, item.catType, tagName
+                ].map(v => (v || "").normalize('NFC').toLowerCase()).join(" ");
+
+                const match = matchTag && 
+                              (sel.reg.length === 0 || sel.reg.includes(item.reg)) && 
+                              (sel.cat.length === 0 || sel.cat.includes(item.cat)) && 
+                              (sel.catType.length === 0 || sel.catType.includes(item.catType)) && 
+                              (sel.recom.length === 0 || sel.recom.includes(rating)) && 
+                              (searchStr.includes(query));
+                
+                if (!match) return '';
+                count++; 
+                return generateCardHtml(item);
+            }).join('');
+            
+            // 更新 Status Bar 統計
+            const totalRegs = [...new Set(attractions.map(a => a.reg))].filter(v=>v).length;
+            const totalCats = [...new Set(attractions.map(a => a.cat))].filter(v=>v).length;
+            const totalTags = tagDefs.length;
+
+            document.getElementById('status-display').innerHTML = `
+                <span class="status-item">[${count}/${attractions.length}] 景點</span>
+                <span class="status-item">[${sel.tags.length || totalTags}/${totalTags}] 標籤</span>
+                <span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>
+                <span class="status-item">[${sel.cat.length || totalCats}/${totalCats}] 類別</span>
+                <span class="status-item">[${sel.recom.length || 4}/4] 評分</span>`;
+        }
+
+        // --- TAGS 管理 ---
+        function openTagsModal() { tagChecklist.clear(); refreshTagList(); openModal('tags-overlay'); }
+        function closeTagsModal() { tagDefs = tagDefs.filter(d => d.name && d.name.trim() !== ""); saveTags(); render(); closeModal('tags-overlay'); }
+        function createNewTag() {
+            const id = 't-' + Date.now(); tagDefs.unshift({ id, name: '' }); refreshTagList();
+            const inp = document.getElementById(`inp-${id}`); const btn = document.getElementById(`eb-${id}`);
+            if (inp && btn) { inp.readOnly = false; inp.focus(); btn.innerText = "SAVE"; btn.style.color = "var(--palette-1)"; }
+        }
+        function refreshTagList() {
+            const container = document.getElementById('tag-list-container');
+            container.innerHTML = tagDefs.map(tag => `<div class="tag-row"><input type="checkbox" style="width:18px; height:18px;" onchange="updateTagCheck('${tag.id}', this.checked)"><input type="text" class="tag-input" id="inp-${tag.id}" value="${tag.name}" placeholder="輸入名稱..." readonly><div class="tag-edit-btn btn-bounce" id="eb-${tag.id}" onclick="toggleTagEdit('${tag.id}')">EDIT</div></div>`).join('');
+            updateDelLabel();
+        }
+        function toggleTagEdit(id) {
+            const inp = document.getElementById(`inp-${id}`), btn = document.getElementById(`eb-${id}`);
+            if (!inp || !btn) return;
+            if (inp.readOnly) { 
+                inp.readOnly = false; inp.focus(); btn.innerText = "SAVE"; btn.style.color = "var(--palette-1)"; 
+            } else { 
+                const val = inp.value.trim(); if (!val) { alert("標籤名不可留空！"); return; }
+                inp.readOnly = true; btn.innerText = "EDIT"; btn.style.color = "var(--glow)"; 
+                tagDefs.find(x => x.id === id).name = val; 
+                saveTags(); initFilters(); render(); 
+            }
+        }
+        function updateTagCheck(id, val) { if(val) tagChecklist.add(id); else tagChecklist.delete(id); updateDelLabel(); }
+        function updateDelLabel() { document.getElementById('tag-del-label').innerText = `DELETE (${tagChecklist.size})`; }
+        function deleteSelectedTags() {
+            if(tagChecklist.size === 0) return;
+            if(confirm("確定刪除選中標籤？")) {
+                tagDefs = tagDefs.filter(d => !tagChecklist.has(d.id));
+                Object.keys(spotToTags).forEach(sid => { if(tagChecklist.has(spotToTags[sid])) delete spotToTags[sid]; });
+                activeFilters.tags = activeFilters.tags.filter(id => !tagChecklist.has(id));
+                tempFilters.tags = tempFilters.tags.filter(id => !tagChecklist.has(id));
+                tagChecklist.clear(); saveTags(); refreshTagList(); render();
+            }
+        }
+        function saveTags() { localStorage.setItem('zine_tag_defs', JSON.stringify(tagDefs)); localStorage.setItem('zine_spot_tags', JSON.stringify(spotToTags)); }
+        function assignTag(sid, tid) { if(tid) spotToTags[sid] = tid; else delete spotToTags[sid]; saveTags(); render(); document.querySelectorAll('.tag-select').forEach(s => s.classList.toggle('has-val', s.value !== "")); }
+
+        // --- Filter 智慧過濾 (恢復冇色功能) ---
+        function initFilters() {
+            const container = document.getElementById('dynamic-filter-container'); if(!container) return;
+            const getLinkedData = (key) => {
+                const filteredSubset = attractions.filter(item => {
+                    const itemTag = spotToTags[item.id] || "untagged";
+                    const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+                    // 計算除自己外其他四項的交集
+                    return (key === 'tags' || tempFilters.tags.length === 0 || tempFilters.tags.includes(itemTag)) &&
+                           (key === 'reg' || tempFilters.reg.length === 0 || tempFilters.reg.includes(item.reg)) &&
+                           (key === 'cat' || tempFilters.cat.length === 0 || tempFilters.cat.includes(item.cat)) &&
+                           (key === 'catType' || tempFilters.catType.length === 0 || tempFilters.catType.includes(item.catType)) &&
+                           (key === 'recom' || tempFilters.recom.length === 0 || tempFilters.recom.includes(rating));
+                });
+                if (key === 'tags') {
+                    const currentValidIds = [...new Set(filteredSubset.map(i => spotToTags[i.id] || "untagged"))];
+                    const baseTags = tagDefs.map(d => ({v: d.id, n: d.name, disabled: !currentValidIds.includes(d.id)}));
+                    return [{v: "untagged", n: "🚫 未設定標籤", disabled: !currentValidIds.includes("untagged")}, ...baseTags];
+                }
+                if (key === 'recom') {
+                    const availableRatings = [...new Set(filteredSubset.map(i => userRatings[i.id] !== undefined ? userRatings[i.id] : (i.baseRecom || '')))];
+                    return [{v:"1",n:"🔍 探索"},{v:"2",n:"👍 認可"},{v:"3",n:"必去🙋"},{v:"",n:"未評測"}].map(opt => ({...opt, disabled: !availableRatings.includes(opt.v)}));
+                }
+                const availableValues = [...new Set(filteredSubset.map(i => i[key]).filter(v=>v))];
+                const allPossibleValues = [...new Set(attractions.map(i => i[key]).filter(v=>v))].sort();
+                return allPossibleValues.map(v => ({v, n: v, disabled: !availableValues.includes(v)}));
+            };
+
+            const labels = { tags: "行程標籤 (TAG)", reg: "區域", cat: "類別", catType: "類別內容", recom: "推薦評分" };
+            container.innerHTML = Object.keys(labels).map(key => {
+                const isOpen = sectionStates[key], items = getLinkedData(key), isAllSelected = tempFilters[key].length === 0;
+                return `<div class="filter-section ${isOpen?'open':''}">
+                    <div class="filter-header btn-bounce" onclick="toggleSec('${key}')"><span class="filter-title">${labels[key]}</span><span class="filter-arrow">▶</span></div>
+                    <div class="filter-expand-area" style="display: ${isOpen ? 'block' : 'none'}">
+                        <label class="master-row btn-bounce"><input type="checkbox" ${isAllSelected?'checked':''} onchange="toggleMaster('${key}')"> <span>全部選取</span></label>
+                        <div class="pill-box">${items.map(opt => {
+                            // 🚀 [修復] 若不匹配且未被選中，則顯示變淡且不可點擊
+                            const isPillActive = isAllSelected || tempFilters[key].includes(opt.v);
+                            return `<div class="pill btn-bounce ${isPillActive ? 'active' : ''} ${opt.disabled ? 'disabled' : ''}" onclick="togglePill('${key}','${opt.v}')">${opt.n}</div>`;
+                        }).join('')}</div>
+                    </div></div>`;
+            }).join('');
+        }
+
+        function toggleSec(k){ sectionStates[k]=!sectionStates[k]; initFilters(); }
+        function toggleMaster(k){ tempFilters[k] = tempFilters[k].length === 0 ? ["__NONE__"] : []; initFilters(); }
+        function togglePill(k, v){
+            if (tempFilters[k].length === 0) {
+                if (k === 'tags') tempFilters[k] = ["untagged", ...tagDefs.map(d => d.id)];
+                else if (k === 'recom') tempFilters[k] = ["1","2","3",""];
+                else tempFilters[k] = [...new Set(attractions.map(a => a[k]))];
+            }
+            const idx = tempFilters[k].indexOf(v);
+            if (idx > -1) tempFilters[k].splice(idx, 1); else tempFilters[k].push(v);
+            const checkMap = { tags: tagDefs.length + 1, recom: 4, reg: [...new Set(attractions.map(a=>a.reg))].length, cat: [...new Set(attractions.map(a=>a.cat))].length, catType: [...new Set(attractions.map(a=>a.catType))].length };
+            if (tempFilters[k].length === (checkMap[k] || 0) || tempFilters[k].length === 0) tempFilters[k] = [];
+            initFilters();
+        }
+
+        function openDetail(id) {
+            const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
+            const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+            const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
+            const tid = spotToTags[item.id] || "";
+            const tagDropHtml = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
+            
+            let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
+
+            document.getElementById('det-content').innerHTML = `
+                <div class="layer-tags">
+                    <span class="hash-tag">#${getVal(item.cat, "未分類")}</span>
+                    <span class="hash-tag">#${getVal(item.catType, "---")}</span>
+                    ${tagDropHtml}
+                </div>
+                <div class="layer-title-row">
+                    <div class="title-group"><div class="det-cn">${item.cn}</div><div class="det-en">${getVal(item.en, "---")}</div></div>
+                    <div id="det-recom-sticker" class="recom-sticker btn-bounce ${rating ? 'rated' : 'empty'}" style="position:static; width:45px; height:45px; font-size:${rating?'22px':'13px'}; margin-left:8px; flex-shrink:0;" onclick="toggleRating('${item.id}')">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[rating]}</div>
+                </div>
+                <div class="det-info-line"><span>區域:</span> ${getVal(item.reg, "未指定")}</div>
+                <div class="det-info-line"><span>鄰近參考:</span> ${getVal(item.nearby, "待補充")}</div>
+                <div class="det-links-row"><a href="${item.nav}" target="_blank" class="link-btn link-nav btn-bounce">📍 導航</a>${refBtnHtml}</div>
+                <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
+                <div class="det-intro">${getVal(item.intro, "暫無詳細介紹內容")}</div>`;
+            openModal('detail-overlay');
+        }
+
+        function openAddModal() {
+            document.querySelectorAll('#add-overlay .form-input').forEach(i => i.value = "");
+            tempAddRating = ''; document.getElementById('add-recom-sticker').innerText="待定"; document.getElementById('add-recom-sticker').className = "recom-sticker btn-bounce empty";
+            document.getElementById('add-tag-dropdown-container').innerHTML = `<div class="tag-dropdown-wrapper"><select class="tag-select" id="in-tag-select" onchange="this.classList.toggle('has-val', this.value !== '')"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}</select></div>`;
+            openModal('add-overlay');
+        }
+
+        function openEditModal(id) {
+            const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
+            tempAddRating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+            const curTag = spotToTags[item.id] || "";
+            document.getElementById('edit-modal-body').innerHTML = `<h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">EDIT MY SPOT</h2><div class="tag-dropdown-wrapper"><select class="tag-select ${curTag?'has-val':''}" id="ed-tag-select" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===curTag?'selected':''}>${d.name}</option>`).join('')}</select></div><div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" style="position:static; width:40px; height:40px; font-size:${tempAddRating?'18px':'12px'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div><div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div><div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div><div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div><div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${getVal(item.cat,'')}"></div><div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div><div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="ed-points" value="${getVal(item.points,'')}"></div><div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="ed-nearby" value="${getVal(item.nearby,'')}"></div><div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="ed-intro" rows="2" style="resize:none">${getVal(item.intro,'')}</textarea></div><div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="ed-ref" value="${getVal(item.ref,'')}"></div><div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div><div class="manage-btn-row"><button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE DATA</button><button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button></div>`;
+            openModal('edit-overlay');
+        }
+
+        // 🚀 [修復 2] saveSpot 必填驗證
+        function saveSpot() {
+            const cn = document.getElementById('in-cn').value.trim();
+            const nav = document.getElementById('in-nav').value.trim();
+            if(!cn || !nav) {
+                alert("必填項目不可留空：中文名 及 導航連結！");
+                return;
+            }
+            const newId = "user-" + Date.now();
+            const newSpot = { id: newId, cn, nav, baseRecom: tempAddRating, en: document.getElementById('in-en').value, reg: document.getElementById('in-reg').value, cat: document.getElementById('in-cat').value, catType: document.getElementById('in-type').value, points: document.getElementById('in-points').value, nearby: document.getElementById('in-nearby').value, intro: document.getElementById('in-intro').value, ref: document.getElementById('in-ref').value };
+            let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); list.push(newSpot);
+            localStorage.setItem('zine_user_spots', JSON.stringify(list));
+            const selTag = document.getElementById('in-tag-select').value;
+            if(selTag) { spotToTags[newId] = selTag; saveTags(); }
+            closeModal('add-overlay'); initAppData(); render();
+        }
+
+        function updateSpot(id) {
+            const cn = document.getElementById('ed-cn').value.trim(), nav = document.getElementById('ed-nav').value.trim();
+            if(!cn || !nav) { alert("必填項目不可為空！"); return; }
+            let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); const idx = list.findIndex(a => String(a.id) === String(id));
+            if(idx > -1) { 
+                list[idx] = { id, cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value, points: document.getElementById('ed-points').value, nearby: document.getElementById('ed-nearby').value, intro: document.getElementById('ed-intro').value, ref: document.getElementById('ed-ref').value };
+                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
+                userRatings[id] = tempAddRating; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
+                closeModal('edit-overlay'); initAppData(); render(); openMyCards(); 
+            }
+        }
+
+        function deleteSpot(id) {
+            if(confirm("確定刪除？")) {
+                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
+                list = list.filter(a => String(a.id) !== String(id));
+                localStorage.setItem('zine_user_spots', JSON.stringify(list));
+                delete spotToTags[id]; delete userRatings[id]; 
+                saveTags(); initAppData(); render(); closeModal('edit-overlay'); openMyCards();
+            }
+        }
+
+        function toggleRating(id) {
+            const m = {'':'1','1':'2','2':'3','3':''};
+            const cur = userRatings[id] !== undefined ? userRatings[id] : (attractions.find(a=>String(a.id)===String(id))?.baseRecom || '');
+            userRatings[id] = m[cur]; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
+            render();
+            if(document.getElementById('my-cards-overlay').style.display === 'flex') openMyCards();
+            const s = document.getElementById('det-recom-sticker');
+            if(s) { s.innerText = {'1':'🔍','2':'👍','3':'🙋','':'待定'}[userRatings[id]]; s.className = `recom-sticker btn-bounce ${userRatings[id]?'rated':'empty'}`; s.style.fontSize = userRatings[id]?'22px':'13px'; }
+        }
+
+        function openMyCards() {
+            const userSpots = attractions.filter(a => a.id.startsWith('user-'));
+            const grid = document.getElementById('my-cards-grid');
+            grid.innerHTML = userSpots.length ? userSpots.map(item => generateCardHtml(item, true)).join('') : "<p style='text-align:center; color:#ccc; padding:20px; width:100%;'>暫無手動加入</p>";
+            openModal('my-cards-overlay');
+        }
+
+        function applyFilters(){ activeFilters = JSON.parse(JSON.stringify(tempFilters)); render(); closeModal('filter-overlay'); }
+        function resetAllFilters(){ tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }; initFilters(); }
+        function openFilterModal(){ 
+            const validTagIds = tagDefs.map(d => d.id);
+            activeFilters.tags = activeFilters.tags.filter(id => validTagIds.includes(id) || id === "untagged");
+            tempFilters = JSON.parse(JSON.stringify(activeFilters)); 
+            initFilters(); openModal('filter-overlay'); 
+        }
+        function cycleAddRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('add-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
+        function cycleEditRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('ed-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; s.style.fontSize = tempAddRating?'18px':'12px'; }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; setTimeout(()=>document.getElementById(id).classList.add('active'), 10); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display = 'none', 300); }
+        
+        window.onload = function() { initAppData(); render(); };
+    </script>
+</body>
+</html>
