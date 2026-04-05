@@ -448,7 +448,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
 海之中道海濱公園	Uminonakamichi Seaside Park	觀光名勝	公園	四季壯麗花海（如春季粉蝶花）、佔地廣闊適合單車環遊、動物森林可近距離接觸、大型兒童遊樂場設施。	福岡東區	海之中道車站、海洋世界海之中道	位於福岡市東區的「海之中道海濱公園」，是一座佔地廣達約 300 公頃的國營公園，坐落於連結博多市區與志賀島的沙洲之上，擁有玄界灘與博多灣的絕美雙向海景。園內以四季更迭的壯麗花海聞名，特別是春季盛開的「粉蝶花」將山丘染成一片湛藍，與天空連成一線，是福岡最具代表性的視覺盛宴。除了視覺饗宴，園內的「動物森林」更提供近距離觀察水豚、袋鼠的療癒體驗，加上規劃完美的單車道與超大型溜滑梯，使其成為親子旅遊與自然愛好者的首選聖地。這裡展現了繁忙都會中難得的寬闊感與生態多樣性，無論是午後野餐或是整日深度遊覽，都能讓旅人在海風徐徐中找回身心的平衡。	https://youtu.be/I-yTHG5hKa8?si=CVezkw30YwHhPOfQ	https://maps.app.goo.gl/BaZEnugajmkmd9sT8	1`; 
         let attractions = [], userRatings = {}, activeFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, sectionStates = { tags: false, reg: false, cat: false, catType: false, recom: false };
         let tagDefs = [], spotToTags = {}, tagChecklist = new Set();
-        const ICON_MAP = { '美食餐廳': '🍽️', '購物': '🛍️', '觀光名勝': '⛩️', '主題體驗': '🎪', '人氣打卡': '📸', '隱密秘境': '🤫' }, uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
+        const ICON_MAP = { '美食餐廳': '🍽️', '餐廳': '🍽️', '購物採買': '🛍️', '購物': '🛍️', '觀光名勝': '⛩️', '觀光': '⛩️', '主題體驗': '🎪', '主題': '🎪', '人氣打卡': '📸', '人氣': '📸', '隱密秘境': '🤫', '隱密': '🤫' }, uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
         let tempAddRating = ''; 
 
         const getVal = (v, fallback) => (v && v.trim() !== "") ? v : fallback;
