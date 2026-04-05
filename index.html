@@ -187,6 +187,85 @@
 }
 .btn-update { background: var(--accent); }
 .btn-delete { background: var(--danger); }
+
+/* 🚀 [V130.70] TAG 中心化索引 - 樣式修正 */
+.view-toggle-container { padding: 10px 15px 20px 15px; display: flex; align-items: center; }
+
+.checkbox-wrapper {
+    display: flex; align-items: center; gap: 10px; padding: 10px 18px;
+    border: 1.5px solid var(--accent); border-radius: 12px; cursor: pointer; user-select: none;
+}
+.checkbox-wrapper input { display: none; }
+.custom-checkbox {
+    width: 18px; height: 18px; border: 2px solid var(--accent);
+    border-radius: 4px; position: relative;
+}
+.checkbox-wrapper input:checked + .custom-checkbox { background: var(--accent); }
+.checkbox-wrapper input:checked + .custom-checkbox::after {
+    content: '✓'; color: white; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -55%); font-size: 12px; font-weight: 900;
+}
+.checkbox-label { font-size: 13px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+
+/* 摺疊組別：以 TAG 名稱為標題 */
+.my-cards-group { border-bottom: 1px solid var(--line); width: 100%; overflow: hidden; margin-bottom: 5px; }
+.my-cards-group summary { 
+    padding: 18px 15px; font-weight: 900; font-size: 14px; color: var(--accent); 
+    cursor: pointer; list-style: none; display: flex; align-items: center; background: #fafafa;
+}
+.my-cards-group summary::-webkit-details-marker { display: none; }
+.my-cards-group summary::before { content: '▶'; font-size: 10px; margin-right: 10px; transition: 0.2s; color: var(--glow); }
+.my-cards-group[open] summary::before { transform: rotate(90deg); }
+
+/* 🚀 [V130.75] 動態 Grid 佈局 - 手機保證雙列，大屏自動排滿 */
+.my-cards-grid-inner { 
+    display: grid; 
+    /* 核心修正：改用 auto-fill，令大螢幕可以放多過兩張卡 */
+    grid-template-columns: repeat(auto-fill, 165px); 
+    gap: 10px 8px; 
+    padding: 10px 15px 20px 15px; 
+    justify-content: start; 
+    width: 100%;
+}
+
+@media screen and (max-width: 600px) {
+    #my-cards-overlay .modal-content { width: 96% !important; min-width: 350px !important; border-radius: 20px; }
+    #my-cards-overlay .modal-body { padding: 15px 5px !important; }
+}
+
+/* 🎯 [V131.30] 專屬修正：Detail 同 Edit 視窗入面粒評分掣對位 */
+/* 1. 詳細內容視窗 (Detail) 粒掣 */
+#det-recom-sticker {
+    position: static !important; /* 核心：取消卡片嘅絕對定位 */
+    width: 45px !important;
+    height: 45px !important;
+    flex-shrink: 0;
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px; /* 評分圖標大細 */
+}
+
+/* 2. 編輯視窗 (Edit) 粒掣 */
+#ed-recom-sticker {
+    position: static !important; /* 核心：取消絕對定位 */
+    width: 40px !important;
+    height: 40px !important;
+    flex-shrink: 0;
+    margin-left: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* 確保 Edit 視窗嗰行 Label 同粒掣垂直對齊 */
+#edit-modal-body .form-group[style*="display:flex"] {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0; /* 靠 margin-left 控制粒掣距離 */
+}
     </style>
 </head>
 <body onclick="void(0)">
@@ -446,45 +525,48 @@ ONE PIECE 航海王專賣店 福岡店	ONE PIECE Mugiwara Store Fukuoka	購物	�
 JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官方店、熱血動漫周邊、排球少年/咒術迴戰/鬼滅之刃、作者手稿展示	福岡博多	博多運河城 B1F	如果你是動漫迷，絕對不能錯過這間集結《週刊少年Jump》所有熱門 IP 的聖地。店內充滿了熱血與動力的氛圍，展示了包括《七龍珠》、《灌籃高手》到現今最紅的《我推的孩子》等多樣化商品。店內不定期展示作者的原稿複製品與簽名版，讓購物的知性層次大幅提升。對於高品質旅遊來說，這裡代表了日本動漫工業的最前線。店內商品的設計感極強，從穿搭服飾到生活雜貨都具備高度的實用性與設計美感。這是一處讓遊客能瞬間感受到日本流行文化心跳的地方，更是挑選具備高度「潮流感」伴手禮的首選位置。	https://youtu.be/mni1GkMsPQQ?si=xkoq0snqH9AUl_gf	https://maps.app.goo.gl/1YUy2bWzufXYJhrE6	
 筥崎宮	Hakozakigu Shrine	觀光名勝	神社	日本三大八幡之一、勝運守護神、重要文化財「伏敵門」、古董市集、四季花卉	福岡東區	地鐵箱崎宮前站	擁有超過千年歷史的筥崎宮，是福岡極具分量的精神支柱。這裡以「勝利之神」著稱，連當地的福岡軟銀鷹隊與福岡黃蜂隊在球季前都會前來參拜。壯觀的樓門上掛著著名的「敵國降伏」匾額，展現出強烈的歷史威嚴感。神社境內四季皆美，尤以夏季的繡球花祭與百合花祭最為動人。此外，這裡定期舉辦的「風潮古董市集」是全九州最大規模，吸引無數喜愛高品質古物的收藏家到訪。走在寬闊的表參道上，能感受到一股穿越時空的沈靜力量，是深度體驗日本傳統祭禮文化與感受「必勝」信念能量的最佳場所。	https://youtu.be/U0DvuICj8ss?si=aCHQz9Slpfc7MmSW	https://maps.app.goo.gl/7Ar4F2hi9pusmgDE7	
 海之中道海濱公園	Uminonakamichi Seaside Park	觀光名勝	公園	四季壯麗花海（如春季粉蝶花）、佔地廣闊適合單車環遊、動物森林可近距離接觸、大型兒童遊樂場設施。	福岡東區	海之中道車站、海洋世界海之中道	位於福岡市東區的「海之中道海濱公園」，是一座佔地廣達約 300 公頃的國營公園，坐落於連結博多市區與志賀島的沙洲之上，擁有玄界灘與博多灣的絕美雙向海景。園內以四季更迭的壯麗花海聞名，特別是春季盛開的「粉蝶花」將山丘染成一片湛藍，與天空連成一線，是福岡最具代表性的視覺盛宴。除了視覺饗宴，園內的「動物森林」更提供近距離觀察水豚、袋鼠的療癒體驗，加上規劃完美的單車道與超大型溜滑梯，使其成為親子旅遊與自然愛好者的首選聖地。這裡展現了繁忙都會中難得的寬闊感與生態多樣性，無論是午後野餐或是整日深度遊覽，都能讓旅人在海風徐徐中找回身心的平衡。	https://youtu.be/I-yTHG5hKa8?si=CVezkw30YwHhPOfQ	https://maps.app.goo.gl/BaZEnugajmkmd9sT8	1`; 
+
         let attractions = [], userRatings = {}, activeFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, sectionStates = { tags: false, reg: false, cat: false, catType: false, recom: false };
         let tagDefs = [], spotToTags = {}, tagChecklist = new Set();
-        const ICON_MAP = { '美食餐廳': '🍽️', '餐廳': '🍽️', '購物採買': '🛍️', '購物': '🛍️', '觀光名勝': '⛩️', '觀光': '⛩️', '主題體驗': '🎪', '主題': '🎪', '人氣打卡': '📸', '人氣': '📸', '隱密秘境': '🤫', '隱密': '🤫' }, uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
+        const ICON_MAP = { '美食餐廳': '🍽️', '餐廳': '🍽️', '購物採買': '🛍️', '購物': '🛍️', '觀光名勝': '⛩️', '觀光': '⛩️', '主題體驗': '🎪', '主題': '🎪', '人氣打卡': '📸', '人氣': '📸', '隱密秘境': '🤫', '隱密': '🤫' };
+        const uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
         let tempAddRating = ''; 
+        let isUserOnlyMode = false; 
 
         const getVal = (v, fallback) => (v && v.trim() !== "") ? v : fallback;
-        
-        // 🚀 [修復 4] Icon 邏輯：配對不到即顯示星星
-        const getIcon = (cat) => {
-            const c = (cat || "").trim();
-            return ICON_MAP[c] || '⭐';
-        };
+        const getIcon = (cat) => ICON_MAP[(cat || "").trim()] || '⭐';
 
         function initAppData() {
             const baseData = parseTSV(RAW_PASTED_DATA);
             let userSpots = [];
             try { userSpots = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); } catch(e) { userSpots = []; }
             attractions = [...userSpots.slice().reverse(), ...baseData];
-            try { userRatings = JSON.parse(localStorage.getItem('zine_ratings') || '{}'); tagDefs = JSON.parse(localStorage.getItem('zine_tag_defs') || '[]'); spotToTags = JSON.parse(localStorage.getItem('zine_spot_tags') || '{}'); } catch(e) { }
+            try { 
+                userRatings = JSON.parse(localStorage.getItem('zine_ratings') || '{}'); 
+                tagDefs = JSON.parse(localStorage.getItem('zine_tag_defs') || '[]'); 
+                spotToTags = JSON.parse(localStorage.getItem('zine_spot_tags') || '{}'); 
+            } catch(e) { }
         }
 
+        // 🚀 [修復] 固定 ID 邏輯，確保存檔 Refresh 唔會消失
         function parseTSV(rawText) {
             if(!rawText || !rawText.trim()) return [];
             return rawText.trim().split(/\r?\n/).map((line, i) => {
                 const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
                 if (i === 0 && (cols[0].includes("中文") || cols[2].includes("類別"))) return null;
                 if (!cols[0]) return null;
-                const safeId = "b-" + i + "-" + Math.random().toString(36).substr(2, 4);
+                const safeId = "b-" + i + "-" + encodeURIComponent(cols[0].substring(0,3));
                 return { id: safeId, cn: cols[0], en: cols[1], cat: cols[2], catType: cols[3], points: cols[4], reg: cols[5], nearby: cols[6], intro: cols[7], ref: cols[8], nav: cols[9], baseRecom: cols[10] };
             }).map(item => item ? { ...item, icon: getIcon(item.cat) } : null).filter(item => item !== null);
         }
 
-        function generateCardHtml(item, isEditMode = false) {
+        function generateCardHtml(item, clickFnOverride = null) {
             const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
             const idx = (uniqueRegs.findIndex(r => (item.reg || "").includes(r)) % 5) + 1;
             const tId = spotToTags[item.id];
             const tDef = tagDefs.find(d => d.id === tId);
             const tagHtml = (tDef && tDef.name) ? `<div class="card-tag-row active"><span class="tag-mini-pill">${tDef.name}</span></div>` : `<div class="card-tag-row"></div>`;
-            const clickFn = isEditMode ? `openEditModal('${item.id}')` : `openDetail('${item.id}')`;
+            const clickFn = clickFnOverride || `openDetail('${item.id}')`;
             return `<div class="card btn-bounce" onclick="${clickFn}">
                 <div class="reg-rect-tag" style="background:var(--palette-${idx > 0 ? idx : 1})">${getVal(item.reg, "未指定")}</div>
                 <div class="recom-sticker btn-bounce ${rating ? 'rated' : 'empty'}" onclick="event.stopPropagation(); toggleRating('${item.id}')">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '未評' }[rating]}</div>
@@ -495,56 +577,28 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             </div>`;
         }
 
-        // 🚀 [修復 3] 五維精準搜尋
         function render() {
             const grid = document.getElementById('card-grid');
-            if (!grid) return; // 安全檢查
-            
-            // 🚀 關鍵 1：搜尋關鍵字先做 Unicode 正常化 (NFC)，確保中文比對成功
+            if (!grid) return;
             const query = (document.getElementById('search-input').value || "").normalize('NFC').trim().toLowerCase();
             const sel = activeFilters;
             let count = 0;
-
             grid.innerHTML = attractions.map(item => {
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
                 if (rating === '0') return '';
-
                 const itemTagId = spotToTags[item.id] || "untagged";
                 const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
-
-                // 🚀 關鍵 2：撈出 Tag 名，同樣做 NFC 正常化，解決中文搜唔到嘅問題
                 const tDef = tagDefs.find(d => String(d.id) === String(itemTagId));
                 const tagName = (tDef && tDef.name) ? String(tDef.name).normalize('NFC') : "";
-
-                // 🚀 關鍵 3：串連你要嘅六個搜尋維度 (中、英、區、類、內、Tag 名)
-                // 每個欄位都做 NFC 正常化，確保萬無一失
-                const searchStr = [
-                    item.cn, item.en, item.reg, item.cat, item.catType, tagName
-                ].map(v => (v || "").normalize('NFC').toLowerCase()).join(" ");
-
-                const match = matchTag && 
-                              (sel.reg.length === 0 || sel.reg.includes(item.reg)) && 
-                              (sel.cat.length === 0 || sel.cat.includes(item.cat)) && 
-                              (sel.catType.length === 0 || sel.catType.includes(item.catType)) && 
-                              (sel.recom.length === 0 || sel.recom.includes(rating)) && 
-                              (searchStr.includes(query));
-                
+                const searchStr = [item.cn, item.en, item.reg, item.cat, item.catType, tagName].map(v => (v || "").normalize('NFC').toLowerCase()).join(" ");
+                const match = matchTag && (sel.reg.length === 0 || sel.reg.includes(item.reg)) && (sel.cat.length === 0 || sel.cat.includes(item.cat)) && (sel.catType.length === 0 || sel.catType.includes(item.catType)) && (sel.recom.length === 0 || sel.recom.includes(rating)) && (searchStr.includes(query));
                 if (!match) return '';
-                count++; 
-                return generateCardHtml(item);
+                count++; return generateCardHtml(item);
             }).join('');
             
-            // 更新 Status Bar 統計
             const totalRegs = [...new Set(attractions.map(a => a.reg))].filter(v=>v).length;
             const totalCats = [...new Set(attractions.map(a => a.cat))].filter(v=>v).length;
-            const totalTags = tagDefs.length;
-
-            document.getElementById('status-display').innerHTML = `
-                <span class="status-item">[${count}/${attractions.length}] 景點</span>
-                <span class="status-item">[${sel.tags.length || totalTags}/${totalTags}] 標籤</span>
-                <span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>
-                <span class="status-item">[${sel.cat.length || totalCats}/${totalCats}] 類別</span>
-                <span class="status-item">[${sel.recom.length || 4}/4] 評分</span>`;
+            document.getElementById('status-display').innerHTML = `<span class="status-item">[${count}/${attractions.length}] 景點</span><span class="status-item">[${sel.tags.length || tagDefs.length}/${tagDefs.length}] 標籤</span><span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>`;
         }
 
         // --- TAGS 管理 ---
@@ -557,44 +611,43 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         }
         function refreshTagList() {
             const container = document.getElementById('tag-list-container');
+            if(!container) return;
             container.innerHTML = tagDefs.map(tag => `<div class="tag-row"><input type="checkbox" style="width:18px; height:18px;" onchange="updateTagCheck('${tag.id}', this.checked)"><input type="text" class="tag-input" id="inp-${tag.id}" value="${tag.name}" placeholder="輸入名稱..." readonly><div class="tag-edit-btn btn-bounce" id="eb-${tag.id}" onclick="toggleTagEdit('${tag.id}')">EDIT</div></div>`).join('');
             updateDelLabel();
         }
         function toggleTagEdit(id) {
             const inp = document.getElementById(`inp-${id}`), btn = document.getElementById(`eb-${id}`);
             if (!inp || !btn) return;
-            if (inp.readOnly) { 
-                inp.readOnly = false; inp.focus(); btn.innerText = "SAVE"; btn.style.color = "var(--palette-1)"; 
-            } else { 
-                const val = inp.value.trim(); if (!val) { alert("標籤名不可留空！"); return; }
-                inp.readOnly = true; btn.innerText = "EDIT"; btn.style.color = "var(--glow)"; 
-                tagDefs.find(x => x.id === id).name = val; 
-                saveTags(); initFilters(); render(); 
+            if (inp.readOnly) { inp.readOnly = false; inp.focus(); btn.innerText = "SAVE"; } else {
+                const val = inp.value.trim(); if (!val) return;
+                inp.readOnly = true; btn.innerText = "EDIT";
+                tagDefs.find(x => x.id === id).name = val; saveTags(); initFilters(); render(); 
             }
         }
         function updateTagCheck(id, val) { if(val) tagChecklist.add(id); else tagChecklist.delete(id); updateDelLabel(); }
         function updateDelLabel() { document.getElementById('tag-del-label').innerText = `DELETE (${tagChecklist.size})`; }
         function deleteSelectedTags() {
-            if(tagChecklist.size === 0) return;
-            if(confirm("確定刪除選中標籤？")) {
-                tagDefs = tagDefs.filter(d => !tagChecklist.has(d.id));
-                Object.keys(spotToTags).forEach(sid => { if(tagChecklist.has(spotToTags[sid])) delete spotToTags[sid]; });
-                activeFilters.tags = activeFilters.tags.filter(id => !tagChecklist.has(id));
-                tempFilters.tags = tempFilters.tags.filter(id => !tagChecklist.has(id));
-                tagChecklist.clear(); saveTags(); refreshTagList(); render();
-            }
+            if(tagChecklist.size === 0 || !confirm("確定刪除？")) return;
+            tagDefs = tagDefs.filter(d => !tagChecklist.has(d.id));
+            Object.keys(spotToTags).forEach(sid => { if(tagChecklist.has(spotToTags[sid])) delete spotToTags[sid]; });
+            tagChecklist.clear(); saveTags(); refreshTagList(); render();
         }
         function saveTags() { localStorage.setItem('zine_tag_defs', JSON.stringify(tagDefs)); localStorage.setItem('zine_spot_tags', JSON.stringify(spotToTags)); }
-        function assignTag(sid, tid) { if(tid) spotToTags[sid] = tid; else delete spotToTags[sid]; saveTags(); render(); document.querySelectorAll('.tag-select').forEach(s => s.classList.toggle('has-val', s.value !== "")); }
+        
+        function assignTag(sid, tid) { 
+            if(tid) spotToTags[sid] = tid; else delete spotToTags[sid]; 
+            saveTags(); render(); 
+            if(document.getElementById('my-cards-overlay').classList.contains('active')) { openMyCards(false); }
+            document.querySelectorAll('.tag-select').forEach(s => s.classList.toggle('has-val', s.value !== ""));
+        }
 
-        // --- Filter 智慧過濾 (恢復冇色功能) ---
+        // --- 🧪 Filter UI (恢復全功能) ---
         function initFilters() {
             const container = document.getElementById('dynamic-filter-container'); if(!container) return;
             const getLinkedData = (key) => {
                 const filteredSubset = attractions.filter(item => {
                     const itemTag = spotToTags[item.id] || "untagged";
                     const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
-                    // 計算除自己外其他四項的交集
                     return (key === 'tags' || tempFilters.tags.length === 0 || tempFilters.tags.includes(itemTag)) &&
                            (key === 'reg' || tempFilters.reg.length === 0 || tempFilters.reg.includes(item.reg)) &&
                            (key === 'cat' || tempFilters.cat.length === 0 || tempFilters.cat.includes(item.cat)) &&
@@ -603,34 +656,26 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 });
                 if (key === 'tags') {
                     const currentValidIds = [...new Set(filteredSubset.map(i => spotToTags[i.id] || "untagged"))];
-                    const baseTags = tagDefs.map(d => ({v: d.id, n: d.name, disabled: !currentValidIds.includes(d.id)}));
-                    return [{v: "untagged", n: "🚫 未設定標籤", disabled: !currentValidIds.includes("untagged")}, ...baseTags];
+                    return [{v: "untagged", n: "🚫 未設定標籤", disabled: !currentValidIds.includes("untagged")}, ...tagDefs.map(d => ({v: d.id, n: d.name, disabled: !currentValidIds.includes(d.id)}))];
                 }
                 if (key === 'recom') {
-                    const availableRatings = [...new Set(filteredSubset.map(i => userRatings[i.id] !== undefined ? userRatings[i.id] : (i.baseRecom || '')))];
-                    return [{v:"1",n:"🔍 探索"},{v:"2",n:"👍 認可"},{v:"3",n:"必去🙋"},{v:"",n:"未評測"}].map(opt => ({...opt, disabled: !availableRatings.includes(opt.v)}));
+                    const avail = [...new Set(filteredSubset.map(i => userRatings[i.id] !== undefined ? userRatings[i.id] : (i.baseRecom || '')))];
+                    return [{v:"1",n:"🔍 探索"},{v:"2",n:"👍 認眼"},{v:"3",n:"必去🙋"},{v:"",n:"未評測"}].map(opt => ({...opt, disabled: !avail.includes(opt.v)}));
                 }
-                const availableValues = [...new Set(filteredSubset.map(i => i[key]).filter(v=>v))];
-                const allPossibleValues = [...new Set(attractions.map(i => i[key]).filter(v=>v))].sort();
-                return allPossibleValues.map(v => ({v, n: v, disabled: !availableValues.includes(v)}));
+                const availVals = [...new Set(filteredSubset.map(i => i[key]).filter(v=>v))];
+                return [...new Set(attractions.map(i => i[key]).filter(v=>v))].sort().map(v => ({v, n: v, disabled: !availVals.includes(v)}));
             };
-
             const labels = { tags: "行程標籤 (TAG)", reg: "區域", cat: "類別", catType: "類別內容", recom: "推薦評分" };
             container.innerHTML = Object.keys(labels).map(key => {
                 const isOpen = sectionStates[key], items = getLinkedData(key), isAllSelected = tempFilters[key].length === 0;
                 return `<div class="filter-section ${isOpen?'open':''}">
-                    <div class="filter-header btn-bounce" onclick="toggleSec('${key}')"><span class="filter-title">${labels[key]}</span><span class="filter-arrow">▶</span></div>
+                    <div class="filter-header btn-bounce" onclick="toggleSec('${key}')"><span>${labels[key]}</span><span class="filter-arrow">▶</span></div>
                     <div class="filter-expand-area" style="display: ${isOpen ? 'block' : 'none'}">
                         <label class="master-row btn-bounce"><input type="checkbox" ${isAllSelected?'checked':''} onchange="toggleMaster('${key}')"> <span>全部選取</span></label>
-                        <div class="pill-box">${items.map(opt => {
-                            // 🚀 [修復] 若不匹配且未被選中，則顯示變淡且不可點擊
-                            const isPillActive = isAllSelected || tempFilters[key].includes(opt.v);
-                            return `<div class="pill btn-bounce ${isPillActive ? 'active' : ''} ${opt.disabled ? 'disabled' : ''}" onclick="togglePill('${key}','${opt.v}')">${opt.n}</div>`;
-                        }).join('')}</div>
+                        <div class="pill-box">${items.map(opt => `<div class="pill btn-bounce ${isAllSelected || tempFilters[key].includes(opt.v)?'active':''} ${opt.disabled?'disabled':''}" onclick="togglePill('${key}','${opt.v}')">${opt.n}</div>`).join('')}</div>
                     </div></div>`;
             }).join('');
         }
-
         function toggleSec(k){ sectionStates[k]=!sectionStates[k]; initFilters(); }
         function toggleMaster(k){ tempFilters[k] = tempFilters[k].length === 0 ? ["__NONE__"] : []; initFilters(); }
         function togglePill(k, v){
@@ -641,42 +686,37 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             }
             const idx = tempFilters[k].indexOf(v);
             if (idx > -1) tempFilters[k].splice(idx, 1); else tempFilters[k].push(v);
-            const checkMap = { tags: tagDefs.length + 1, recom: 4, reg: [...new Set(attractions.map(a=>a.reg))].length, cat: [...new Set(attractions.map(a=>a.cat))].length, catType: [...new Set(attractions.map(a=>a.catType))].length };
-            if (tempFilters[k].length === (checkMap[k] || 0) || tempFilters[k].length === 0) tempFilters[k] = [];
+            if (tempFilters[k].length === 0) tempFilters[k] = [];
             initFilters();
         }
 
+        // --- 🎨 詳細視窗 & 編輯視窗 ---
         function openDetail(id) {
             const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
             const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
-            const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
             const tid = spotToTags[item.id] || "";
-            const tagDropHtml = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
-            
+            const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
+            const tagDrop = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
             let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
-
             document.getElementById('det-content').innerHTML = `
-                <div class="layer-tags">
-                    <span class="hash-tag">#${getVal(item.cat, "未分類")}</span>
-                    <span class="hash-tag">#${getVal(item.catType, "---")}</span>
-                    ${tagDropHtml}
-                </div>
+                <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDrop}</div>
                 <div class="layer-title-row">
                     <div class="title-group"><div class="det-cn">${item.cn}</div><div class="det-en">${getVal(item.en, "---")}</div></div>
-                    <div id="det-recom-sticker" class="recom-sticker btn-bounce ${rating ? 'rated' : 'empty'}" style="position:static; width:45px; height:45px; font-size:${rating?'22px':'13px'}; margin-left:8px; flex-shrink:0;" onclick="toggleRating('${item.id}')">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[rating]}</div>
+                    <div id="det-recom-sticker" class="recom-sticker btn-bounce rated" onclick="toggleRating('${item.id}')">${{'1':'🔍','2':'👍','3':'🙋','':'待定'}[rating]}</div>
                 </div>
                 <div class="det-info-line"><span>區域:</span> ${getVal(item.reg, "未指定")}</div>
                 <div class="det-info-line"><span>鄰近參考:</span> ${getVal(item.nearby, "待補充")}</div>
                 <div class="det-links-row"><a href="${item.nav}" target="_blank" class="link-btn link-nav btn-bounce">📍 導航</a>${refBtnHtml}</div>
                 <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
-                <div class="det-intro">${getVal(item.intro, "暫無詳細介紹內容")}</div>`;
+                <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
             openModal('detail-overlay');
         }
 
         function openAddModal() {
-            document.querySelectorAll('#add-overlay .form-input').forEach(i => i.value = "");
-            tempAddRating = ''; document.getElementById('add-recom-sticker').innerText="待定"; document.getElementById('add-recom-sticker').className = "recom-sticker btn-bounce empty";
-            document.getElementById('add-tag-dropdown-container').innerHTML = `<div class="tag-dropdown-wrapper"><select class="tag-select" id="in-tag-select" onchange="this.classList.toggle('has-val', this.value !== '')"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}</select></div>`;
+            tempAddRating = '';
+            document.getElementById('add-recom-sticker').innerText="待定";
+            document.getElementById('add-recom-sticker').className = "recom-sticker btn-bounce empty";
+            document.getElementById('add-tag-dropdown-container').innerHTML = `<div class="tag-dropdown-wrapper"><select class="tag-select" id="in-tag-select"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}</select></div>`;
             openModal('add-overlay');
         }
 
@@ -684,18 +724,23 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
             tempAddRating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
             const curTag = spotToTags[item.id] || "";
-            document.getElementById('edit-modal-body').innerHTML = `<h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">EDIT MY SPOT</h2><div class="tag-dropdown-wrapper"><select class="tag-select ${curTag?'has-val':''}" id="ed-tag-select" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===curTag?'selected':''}>${d.name}</option>`).join('')}</select></div><div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" style="position:static; width:40px; height:40px; font-size:${tempAddRating?'18px':'12px'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div><div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div><div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div><div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div><div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${getVal(item.cat,'')}"></div><div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div><div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="ed-points" value="${getVal(item.points,'')}"></div><div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="ed-nearby" value="${getVal(item.nearby,'')}"></div><div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="ed-intro" rows="2" style="resize:none">${getVal(item.intro,'')}</textarea></div><div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="ed-ref" value="${getVal(item.ref,'')}"></div><div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div><div class="manage-btn-row"><button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE DATA</button><button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button></div>`;
+            document.getElementById('edit-modal-body').innerHTML = `
+                <h2 style="margin-bottom:20px; font-weight:900;">EDIT MY SPOT</h2>
+                <div class="tag-dropdown-wrapper"><select class="tag-select ${curTag?'has-val':''}" id="ed-tag-select" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===curTag?'selected':''}>${d.name}</option>`).join('')}</select></div>
+                <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div>
+                <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
+                <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
+                <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div>
+                <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${getVal(item.cat,'')}"></div>
+                <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
+                <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
+                <div class="manage-btn-row"><button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE DATA</button><button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button></div>`;
             openModal('edit-overlay');
         }
 
-        // 🚀 [修復 2] saveSpot 必填驗證
         function saveSpot() {
-            const cn = document.getElementById('in-cn').value.trim();
-            const nav = document.getElementById('in-nav').value.trim();
-            if(!cn || !nav) {
-                alert("必填項目不可留空：中文名 及 導航連結！");
-                return;
-            }
+            const cn = document.getElementById('in-cn').value.trim(), nav = document.getElementById('in-nav').value.trim();
+            if(!cn || !nav) { alert("中文名同導航連結係必填！"); return; }
             const newId = "user-" + Date.now();
             const newSpot = { id: newId, cn, nav, baseRecom: tempAddRating, en: document.getElementById('in-en').value, reg: document.getElementById('in-reg').value, cat: document.getElementById('in-cat').value, catType: document.getElementById('in-type').value, points: document.getElementById('in-points').value, nearby: document.getElementById('in-nearby').value, intro: document.getElementById('in-intro').value, ref: document.getElementById('in-ref').value };
             let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); list.push(newSpot);
@@ -708,56 +753,59 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         function updateSpot(id) {
             const cn = document.getElementById('ed-cn').value.trim(), nav = document.getElementById('ed-nav').value.trim();
             if(!cn || !nav) { alert("必填項目不可為空！"); return; }
-            let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); const idx = list.findIndex(a => String(a.id) === String(id));
+            let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
+            const idx = list.findIndex(a => String(a.id) === String(id));
             if(idx > -1) { 
-                list[idx] = { id, cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value, points: document.getElementById('ed-points').value, nearby: document.getElementById('ed-nearby').value, intro: document.getElementById('ed-intro').value, ref: document.getElementById('ed-ref').value };
+                list[idx] = { ...list[idx], cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value };
                 localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
                 userRatings[id] = tempAddRating; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
-                closeModal('edit-overlay'); initAppData(); render(); openMyCards(); 
+                closeModal('edit-overlay'); initAppData(); render(); openMyCards(false); 
             }
         }
 
-        function deleteSpot(id) {
-            if(confirm("確定刪除？")) {
-                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
-                list = list.filter(a => String(a.id) !== String(id));
-                localStorage.setItem('zine_user_spots', JSON.stringify(list));
-                delete spotToTags[id]; delete userRatings[id]; 
-                saveTags(); initAppData(); render(); closeModal('edit-overlay'); openMyCards();
+        // --- 🚀 MY CARDS 記憶摺疊邏輯 ---
+        function openMyCards(isFreshOpen = false) {
+            const modalOverlay = document.getElementById('my-cards-overlay');
+            const modalBody = modalOverlay.querySelector('.modal-body');
+            const openStates = {};
+            if (!isFreshOpen) {
+                modalBody.querySelectorAll('details').forEach(det => {
+                    const label = det.querySelector('summary').textContent.split('(')[0].trim();
+                    openStates[label] = det.open;
+                });
             }
+            let html = `<h2 style="margin: 0 15px 10px 15px; font-weight:900;">MY CARDS</h2>
+                <div class="view-toggle-container"><label class="checkbox-wrapper"><input type="checkbox" id="user-only-check" ${isUserOnlyMode?'checked':''} onchange="toggleMyCardsFilter(this.checked)"><div class="custom-checkbox"></div><span class="checkbox-label">MY CARDS ONLY</span></label></div>`;
+            if (tagDefs.length === 0) { html += `<p style='text-align:center; padding:40px;'>暫無標籤</p>`; } 
+            else {
+                [...tagDefs].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant')).forEach(tag => {
+                    let cards = attractions.filter(a => spotToTags[a.id] === tag.id);
+                    if (isUserOnlyMode) cards = cards.filter(a => a.id.startsWith('user-'));
+                    const isOpen = (!isFreshOpen && openStates[tag.name]) ? 'open' : '';
+                    html += `<details class="my-cards-group" ${isOpen}><summary>${tag.name} (${cards.length})</summary><div class="my-cards-grid-inner">
+                        ${cards.length > 0 ? cards.map(item => generateCardHtml(item, item.id.startsWith('user-') ? `openEditModal('${item.id}')` : `openDetail('${item.id}')`)).join('') : '<p style="font-size:11px; color:#ccc; padding:15px; grid-column:1/-1;">(0) 暫無卡片</p>'}
+                    </div></details>`;
+                });
+            }
+            modalBody.innerHTML = html; openModal('my-cards-overlay');
         }
 
-        function toggleRating(id) {
-            const m = {'':'1','1':'2','2':'3','3':''};
-            const cur = userRatings[id] !== undefined ? userRatings[id] : (attractions.find(a=>String(a.id)===String(id))?.baseRecom || '');
-            userRatings[id] = m[cur]; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
-            render();
-            if(document.getElementById('my-cards-overlay').style.display === 'flex') openMyCards();
-            const s = document.getElementById('det-recom-sticker');
-            if(s) { s.innerText = {'1':'🔍','2':'👍','3':'🙋','':'待定'}[userRatings[id]]; s.className = `recom-sticker btn-bounce ${userRatings[id]?'rated':'empty'}`; s.style.fontSize = userRatings[id]?'22px':'13px'; }
-        }
+        function toggleMyCardsFilter(checked) { isUserOnlyMode = checked; openMyCards(false); }
 
-        function openMyCards() {
-            const userSpots = attractions.filter(a => a.id.startsWith('user-'));
-            const grid = document.getElementById('my-cards-grid');
-            grid.innerHTML = userSpots.length ? userSpots.map(item => generateCardHtml(item, true)).join('') : "<p style='text-align:center; color:#ccc; padding:20px; width:100%;'>暫無手動加入</p>";
-            openModal('my-cards-overlay');
-        }
-
+        // --- 通用輔助 ---
         function applyFilters(){ activeFilters = JSON.parse(JSON.stringify(tempFilters)); render(); closeModal('filter-overlay'); }
         function resetAllFilters(){ tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }; initFilters(); }
-        function openFilterModal(){ 
-            const validTagIds = tagDefs.map(d => d.id);
-            activeFilters.tags = activeFilters.tags.filter(id => validTagIds.includes(id) || id === "untagged");
-            tempFilters = JSON.parse(JSON.stringify(activeFilters)); 
-            initFilters(); openModal('filter-overlay'); 
-        }
+        function openFilterModal(){ tempFilters = JSON.parse(JSON.stringify(activeFilters)); initFilters(); openModal('filter-overlay'); }
+        function deleteSpot(id) { if(confirm("確定刪除？")) { let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); list = list.filter(a => String(a.id) !== String(id)); localStorage.setItem('zine_user_spots', JSON.stringify(list)); delete spotToTags[id]; saveTags(); initAppData(); render(); closeModal('edit-overlay'); openMyCards(false); } }
+        function toggleRating(id) { const m={'':'1','1':'2','2':'3','3':''}; userRatings[id] = m[userRatings[id]||'']; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); render(); if(document.getElementById('my-cards-overlay').classList.contains('active')) openMyCards(false); }
         function cycleAddRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('add-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
-        function cycleEditRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('ed-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; s.style.fontSize = tempAddRating?'18px':'12px'; }
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; setTimeout(()=>document.getElementById(id).classList.add('active'), 10); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); setTimeout(()=>document.getElementById(id).style.display = 'none', 300); }
-        
+        function cycleEditRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('ed-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
+        function openModal(id) { const el = document.getElementById(id); el.style.display = 'flex'; setTimeout(()=>el.classList.add('active'), 10); }
+        function closeModal(id) { const el = document.getElementById(id); el.classList.remove('active'); setTimeout(()=>el.style.display = 'none', 300); }
+
         window.onload = function() { initAppData(); render(); };
+
+		
     </script>
 </body>
 </html>
