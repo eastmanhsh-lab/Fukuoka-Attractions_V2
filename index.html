@@ -188,18 +188,15 @@
 .btn-update { background: var(--accent); }
 .btn-delete { background: var(--danger); }
 
-/* 🚀 [V131.50 FINAL] 整合樣式：雙列排版 + 評分掣修正 + 背景鎖定 */
-/* 1. Toggle 掣與 Checkbox 容器 */
+/* 🚀 [V131.70 FINAL MERGE] 強制手機雙列對齊 + 評分掣修正 + 背景鎖定 */
+/* 1. Toggle & Checkbox 容器 */
 .view-toggle-container { padding: 10px 15px 20px 15px; display: flex; align-items: center; }
 .checkbox-wrapper {
 	display: flex; align-items: center; gap: 10px; padding: 10px 18px;
 	border: 1.5px solid var(--accent); border-radius: 12px; cursor: pointer; user-select: none;
 }
 .checkbox-wrapper input { display: none; }
-.custom-checkbox {
-	width: 18px; height: 18px; border: 2px solid var(--accent);
-	border-radius: 4px; position: relative;
-}
+.custom-checkbox { width: 18px; height: 18px; border: 2px solid var(--accent); border-radius: 4px; position: relative; }
 .checkbox-wrapper input:checked + .custom-checkbox { background: var(--accent); }
 .checkbox-wrapper input:checked + .custom-checkbox::after {
 	content: '✓'; color: white; position: absolute; top: 50%; left: 50%;
@@ -220,46 +217,41 @@
 .my-cards-grid-inner { 
 	display: grid; 
 	grid-template-columns: repeat(auto-fill, 165px); 
-	gap: 10px 8px; 
-	padding: 10px 12px; 
-	justify-content: start; 
-	width: 100%;
+	gap: 10px 8px; padding: 10px 12px; justify-content: start; width: 100%;
 }
 
 /* 3. 視窗評分掣位置修正 (Detail & Edit) */
 #det-recom-sticker, #ed-recom-sticker {
-	position: static !important;
-	width: 42px !important;
-	height: 42px !important;
-	flex-shrink: 0;
-	margin-left: 12px;
-	display: flex !important;
-	align-items: center !important;
-	justify-content: center;
+	position: static !important; width: 42px !important; height: 42px !important;
+	flex-shrink: 0; margin-left: 12px; display: flex !important; align-items: center !important; justify-content: center;
 }
 #edit-modal-body .form-group, .layer-title-row { display: flex !important; align-items: center !important; }
 
 /* 4. 背景滾動鎖定 */
-body.modal-open { overflow: hidden !important; height: 100vh; }
+body.modal-open { overflow: hidden !important; height: 100vh !important; }
 
-/* 5. 📱 手機版極限優化 (解決你截圖中一行得一個卡片嘅問題) */
+/* 5. 📱 手機版專屬修正 (強制 2-Column) */
 @media screen and (max-width: 600px) {
-	/* 撐闊視窗，留位俾兩粒 165px 嘅卡 */
-	#my-cards-overlay .modal-content { width: 98% !important; min-width: 350px !important; border-radius: 20px; }
-	/* 極限壓縮內邊距 */
-	#my-cards-overlay .modal-body { padding: 15px 4px !important; }
+	#my-cards-overlay .modal-content { width: 98% !important; margin: 0 auto; border-radius: 20px; }
+	#my-cards-overlay .modal-body { padding: 15px 4px !important; } /* 極限壓縮側邊 Padding */
+	
 	.my-cards-grid-inner { 
-		grid-template-columns: repeat(2, 1fr) !important; /* 手機版直接強制 50/50 分成兩列 */
+		grid-template-columns: repeat(2, 1fr) !important; /* 強制平分兩份 */
 		gap: 8px 6px !important; 
 		padding: 10px 2px !important;
+		justify-content: center !important;
 	}
 	.my-cards-grid-inner .card {
-		width: 100% !important; /* 卡片跟隨 50% 闊度 */
-		max-width: 175px;
-		min-width: 150px;
+		width: 100% !important;
+		min-width: 0 !important; /* 🚀 核心修正：移除 150px 限制，准許卡片縮小嚟並排 */
 		height: 140px !important;
 		margin: 0 !important;
+		padding: 12px 10px !important; /* 縮減內邊距防止文字溢出 */
 	}
+	/* 手機版字體微調，防止兩列太擠 */
+	.my-cards-grid-inner .name-cn { font-size: 14px !important; }
+	.my-cards-grid-inner .name-en { font-size: 8px !important; padding-left: 0 !important; }
+	.my-cards-grid-inner .card-icon { font-size: 16px !important; }
 }
     </style>
 </head>
@@ -799,7 +791,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             const el = document.getElementById(id);
             if (!el) return;
             el.style.display = 'flex';
-            // 🚀 鎖定背景：幫 body 加上 modal-open class
+            // 🚀 核心：幫 body 加 class 鎖死滾動
             document.body.classList.add('modal-open');
             setTimeout(() => el.classList.add('active'), 10);
         }
@@ -810,7 +802,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             el.classList.remove('active');
             setTimeout(() => {
                 el.style.display = 'none';
-                // 🚀 解鎖背景：如果冇晒 active 嘅 overlay，先至拎走個 class
+                // 🚀 核心：如果冇晒 active 嘅 modal 先解鎖
                 if (!document.querySelector('.modal-overlay.active')) {
                     document.body.classList.remove('modal-open');
                 }
