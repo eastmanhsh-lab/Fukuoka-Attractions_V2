@@ -287,6 +287,61 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 	.my-cards-grid-inner .name-cn { font-size: 14px !important; }
 	.my-cards-grid-inner .name-en { display: none !important; }
 }
+
+/* 🚀 詳情頁左右滑動軌道 + 動畫 */
+.modal-content { overflow: hidden !important; } 
+
+.modal-slider-wrapper {
+	display: flex;
+	width: 200%; /* 雙倍闊度放兩頁 */
+	transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); /* 🚀 進場動畫 */
+	will-change: transform;
+}
+
+.modal-pane {
+	width: 50%; /* 每頁佔視窗一半 */
+	flex-shrink: 0;
+	overflow-y: auto;
+	max-height: 85vh;
+	padding: 25px;
+	box-sizing: border-box;
+}
+
+/* 🚀 調整後的 EDIT / RETURN 掣樣式 */
+	#modal-action-btn {
+		position: absolute;
+		top: 12px; /* 再移高少少 */
+		left: 12px; /* 再靠左少少 */
+		z-index: 3100;
+		padding: 3px 10px; /* 縮細 Padding 令佢更精緻 */
+		font-size: 9px; /* 字體縮細，費事遮住 hashtag */
+		font-weight: 900;
+		border-radius: 6px;
+		background: var(--paper);
+		display: none; /* 預設隱藏 */
+		transition: all 0.2s;
+		line-height: 1;
+	}
+
+	/* EDIT 狀態：條邊變紅色 (跟返你嘅 --danger) */
+	#modal-action-btn.state-edit {
+		display: block;
+		border: 1.5px solid var(--danger);
+		color: var(--danger);
+	}
+
+	/* RETURN 狀態：條邊變返 FUKUOKA 主色 (Accent) */
+	#modal-action-btn.state-return {
+		display: block;
+		border: 1.5px solid var(--accent);
+		color: var(--accent);
+	}
+
+	/* 🚀 增加 Pane 頂部間距，確保內容唔會被粒掣遮住 */
+	.modal-pane {
+		padding: 40px 25px 25px 25px !important; /* 頂部加到 40px 避開粒掣 */
+	}
+		
     </style>
 </head>
 <body onclick="void(0)">
@@ -346,8 +401,18 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 
     <div id="detail-overlay" class="modal-overlay" onclick="closeModal('detail-overlay')">
         <div class="modal-content" onclick="event.stopPropagation()">
+            <div id="modal-action-btn" class="btn-bounce" onclick="toggleEditFlow()">EDIT</div>
+            
             <span class="close-btn btn-bounce" onclick="closeModal('detail-overlay')">✕</span>
-            <div class="modal-body" id="det-content"></div>
+            
+            <div class="modal-slider-wrapper" id="modal-slider">
+                <div class="modal-pane" id="det-content"></div> 
+                
+                <div class="modal-pane" id="edit-content-pane">
+                    <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">EDIT MY SPOT</h2>
+                    <div id="edit-form-injection"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -718,11 +783,30 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         // --- 🎨 詳細視窗 & 編輯視窗 ---
         function openDetail(id) {
             const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
+            
+            // 1. 每次打開都要重設 Slider 去左邊 (詳情頁)
+            const slider = document.getElementById('modal-slider');
+            slider.style.transform = 'translateX(0)';
+            
+            // 2. 判斷係咪 User Spot，係就顯示 EDIT 掣
+            const actionBtn = document.getElementById('modal-action-btn');
+            actionBtn.innerText = "EDIT";
+            // 🚀 重設 Class，確保一開出嚟係紅色狀態
+            actionBtn.className = "btn-bounce state-edit"; 
+            
+            if(id.startsWith('user-')) {
+                actionBtn.style.display = 'block'; // 顯示出嚟
+            } else {
+                actionBtn.style.display = 'none';  // Hardcode 景點就唔好出呢粒掣
+            }
+
+            // 3. 渲染左面：詳情內容
             const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
             const tid = spotToTags[item.id] || "";
             const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
             const tagDrop = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
             let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
+            
             document.getElementById('det-content').innerHTML = `
                 <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDrop}</div>
                 <div class="layer-title-row">
@@ -734,7 +818,43 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 <div class="det-links-row"><a href="${item.nav}" target="_blank" class="link-btn link-nav btn-bounce">📍 導航</a>${refBtnHtml}</div>
                 <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
                 <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
+
+            // 4. 預先準備右面：編輯表單 (User Spot 專屬)
+            if(id.startsWith('user-')) {
+                tempAddRating = rating;
+                const curTag = spotToTags[item.id] || "";
+                document.getElementById('edit-form-injection').innerHTML = `
+                    <div class="tag-dropdown-wrapper"><select class="tag-select ${curTag?'has-val':''}" id="ed-tag-select" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===curTag?'selected':''}>${d.name}</option>`).join('')}</select></div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div>
+                    <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
+                    <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
+                    <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div>
+                    <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${getVal(item.cat,'')}"></div>
+                    <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
+                    <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
+                    <div class="manage-btn-row"><button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE DATA</button><button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button></div>`;
+            }
             openModal('detail-overlay');
+        }
+
+		// 🚀 核心：左右滑動效果
+        function toggleEditFlow() {
+            const slider = document.getElementById('modal-slider');
+            const btn = document.getElementById('modal-action-btn');
+            
+            if (btn.innerText === "EDIT") {
+                slider.style.transform = 'translateX(-50%)'; 
+                btn.innerText = "RETURN";
+                // 🚀 切換成主色 (Accent)
+                btn.classList.remove('state-edit');
+                btn.classList.add('state-return');
+            } else {
+                slider.style.transform = 'translateX(0)'; 
+                btn.innerText = "EDIT";
+                // 🚀 切換返紅色 (Danger)
+                btn.classList.remove('state-return');
+                btn.classList.add('state-edit');
+            }
         }
 
         function openAddModal() {
@@ -778,13 +898,26 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         function updateSpot(id) {
             const cn = document.getElementById('ed-cn').value.trim(), nav = document.getElementById('ed-nav').value.trim();
             if(!cn || !nav) { alert("必填項目不可為空！"); return; }
+            
             let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
             const idx = list.findIndex(a => String(a.id) === String(id));
+            
             if(idx > -1) { 
+                // 1. 更新資料
                 list[idx] = { ...list[idx], cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value };
                 localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
-                userRatings[id] = tempAddRating; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
-                closeModal('edit-overlay'); initAppData(); render(); openMyCards(false); 
+                userRatings[id] = tempAddRating; 
+                localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
+
+                // 2. 重新整理底層數據
+                initAppData(); 
+                render(); 
+
+                // 3. 🚀 核心：滑動返轉頭去「詳細內容」頁面
+                toggleEditFlow(); 
+                
+                // 4. 🚀 核心：重新 Render 詳細內容（等佢顯示更新咗嘅字）
+                openDetail(id); 
             }
         }
 
@@ -807,8 +940,10 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                     let cards = attractions.filter(a => spotToTags[a.id] === tag.id);
                     if (isUserOnlyMode) cards = cards.filter(a => a.id.startsWith('user-'));
                     const isOpen = (!isFreshOpen && openStates[tag.name]) ? 'open' : '';
+                    
+                    // 🚀 核心修正位：統一呼叫 openDetail，唔再分開 user- 定 hardcode
                     html += `<details class="my-cards-group" ${isOpen}><summary>${tag.name} (${cards.length})</summary><div class="my-cards-grid-inner">
-                        ${cards.length > 0 ? cards.map(item => generateCardHtml(item, item.id.startsWith('user-') ? `openEditModal('${item.id}')` : `openDetail('${item.id}')`)).join('') : '<p style="font-size:11px; color:#ccc; padding:15px; grid-column:1/-1;">(0) 暫無卡片</p>'}
+                        ${cards.length > 0 ? cards.map(item => generateCardHtml(item, `openDetail('${item.id}')`)).join('') : '<p style="font-size:11px; color:#ccc; padding:15px; grid-column:1/-1;">(0) 暫無卡片</p>'}
                     </div></details>`;
                 });
             }
@@ -821,7 +956,21 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         function applyFilters(){ activeFilters = JSON.parse(JSON.stringify(tempFilters)); render(); closeModal('filter-overlay'); }
         function resetAllFilters(){ tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }; initFilters(); }
         function openFilterModal(){ tempFilters = JSON.parse(JSON.stringify(activeFilters)); initFilters(); openModal('filter-overlay'); }
-        function deleteSpot(id) { if(confirm("確定刪除？")) { let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); list = list.filter(a => String(a.id) !== String(id)); localStorage.setItem('zine_user_spots', JSON.stringify(list)); delete spotToTags[id]; saveTags(); initAppData(); render(); closeModal('edit-overlay'); openMyCards(false); } }
+        function deleteSpot(id) {
+            if(confirm("確定刪除？")) { 
+                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); 
+                list = list.filter(a => String(a.id) !== String(id)); 
+                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
+                delete spotToTags[id]; 
+                saveTags(); 
+                
+                initAppData(); 
+                render(); 
+
+                // 🚀 核心：刪除後直接關閉成個 Detail 視窗，唔好再彈 Tagged 頁出嚟
+                closeModal('detail-overlay'); 
+            } 
+        }
         // 🚀 修正：撳掣後即時更新埋彈出視窗嘅視覺
         function toggleRating(id) {
             const m = {'':'1','1':'2','2':'3','3':''};
