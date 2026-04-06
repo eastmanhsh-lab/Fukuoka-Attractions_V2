@@ -188,15 +188,35 @@
 .btn-update { background: var(--accent); }
 .btn-delete { background: var(--danger); }
 
-/* 🚀 [V131.70 FINAL MERGE] 強制手機雙列對齊 + 評分掣修正 + 背景鎖定 */
-/* 1. Toggle & Checkbox 容器 */
+/* =========================================================== */
+/* 🚀 [FINAL FULL REPAIR V2] 修復全部視窗、標籤與 Toggle 掣 */
+/* =========================================================== */
+
+/* 1. 背景滾動鎖定 */
+body.modal-open { overflow: hidden !important; height: 100vh !important; }
+
+/* 2. [修復] MY CARDS ONLY Toggle 掣 (補返個框同 Checkbox 位) */
 .view-toggle-container { padding: 10px 15px 20px 15px; display: flex; align-items: center; }
 .checkbox-wrapper {
-	display: flex; align-items: center; gap: 10px; padding: 10px 18px;
-	border: 1.5px solid var(--accent); border-radius: 12px; cursor: pointer; user-select: none;
+	display: flex !important; 
+	flex-direction: row !important; /* 🚀 確保打橫排 */
+	align-items: center !important; 
+	gap: 10px; padding: 10px 18px;
+	border: 1.5px solid var(--accent); 
+	border-radius: 12px; 
+	cursor: pointer; 
+	user-select: none;
+	background: var(--paper); /* 補返個框嘅底色 */
+	box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 .checkbox-wrapper input { display: none; }
-.custom-checkbox { width: 18px; height: 18px; border: 2px solid var(--accent); border-radius: 4px; position: relative; }
+.custom-checkbox { 
+	width: 18px; height: 18px; 
+	border: 2px solid var(--accent); 
+	border-radius: 4px; 
+	position: relative; 
+	flex-shrink: 0; /* 🚀 確保 Checkbox 唔會被文字擠壓 */
+}
 .checkbox-wrapper input:checked + .custom-checkbox { background: var(--accent); }
 .checkbox-wrapper input:checked + .custom-checkbox::after {
 	content: '✓'; color: white; position: absolute; top: 50%; left: 50%;
@@ -204,7 +224,7 @@
 }
 .checkbox-label { font-size: 13px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
 
-/* 2. 摺疊組別與 Grid (大螢幕自動排滿) */
+/* 3. MY CARDS 摺疊組別與 Grid 樣式 */
 .my-cards-group { border-bottom: 1px solid var(--line); width: 100%; overflow: hidden; margin-bottom: 5px; }
 .my-cards-group summary { 
 	padding: 18px 15px; font-weight: 900; font-size: 14px; color: var(--accent); 
@@ -220,115 +240,53 @@
 	gap: 10px 8px; padding: 10px 12px; justify-content: start; width: 100%;
 }
 
-/* 3. 視窗評分掣位置修正 (Detail & Edit) */
+/* 4. EDIT MY SPOT: 強制變返上下排 (跟足 ADD NEW SPOT) */
+#edit-modal-body .form-group {
+	display: flex !important;
+	flex-direction: column !important; /* 🚀 強制變直排 */
+	align-items: flex-start !important;
+	width: 100% !important;
+	margin-bottom: 16px !important;
+}
+#edit-modal-body .form-label {
+	width: 100% !important; margin-bottom: 6px !important;
+	font-size: 11px !important; font-weight: 800 !important;
+	color: var(--glow) !important; text-transform: uppercase !important;
+	display: block !important; text-align: left !important;
+}
+#edit-modal-body .form-input { width: 100% !important; box-sizing: border-box !important; background: #f9f9f7 !important; }
+
+/* 5. TAGS MANAGEMENT: 掣位絕對鎖死喺框入面 */
+.tag-row {
+	display: flex !important; justify-content: space-between !important;
+	align-items: center !important; width: 100% !important;
+	box-sizing: border-box !important; padding: 10px 12px !important;
+	background: #f9f9f7 !important; border-radius: 12px !important;
+	margin-bottom: 10px !important; border: 1px solid var(--line) !important;
+	overflow: hidden !important;
+}
+.tag-input { flex: 1 !important; min-width: 0 !important; margin-right: 10px !important; background: transparent !important; }
+.tag-edit-btn { flex-shrink: 0 !important; white-space: nowrap !important; font-weight: 900 !important; color: var(--glow) !important; }
+
+/* 6. 視窗評分掣位置修正 */
 #det-recom-sticker, #ed-recom-sticker {
 	position: static !important; width: 42px !important; height: 42px !important;
 	flex-shrink: 0; margin-left: 12px; display: flex !important; align-items: center !important; justify-content: center;
 }
-#edit-modal-body .form-group, .layer-title-row { display: flex !important; align-items: center !important; }
 
-/* 4. 背景滾動鎖定 */
-body.modal-open { overflow: hidden !important; height: 100vh !important; }
-
-/* 5. 📱 手機版專屬修正 (強制 2-Column) */
+/* 7. 📱 手機版：強制雙列卡片 (保底) */
 @media screen and (max-width: 600px) {
 	#my-cards-overlay .modal-content { width: 98% !important; margin: 0 auto; border-radius: 20px; }
-	#my-cards-overlay .modal-body { padding: 15px 4px !important; } /* 極限壓縮側邊 Padding */
-	
+	#my-cards-overlay .modal-body { padding: 15px 4px !important; }
 	.my-cards-grid-inner { 
-		grid-template-columns: repeat(2, 1fr) !important; /* 強制平分兩份 */
-		gap: 8px 6px !important; 
-		padding: 10px 2px !important;
+		grid-template-columns: repeat(2, 1fr) !important; 
+		gap: 8px 6px !important; padding: 10px 2px !important;
 		justify-content: center !important;
 	}
-	.my-cards-grid-inner .card {
-		width: 100% !important;
-		min-width: 0 !important; /* 🚀 核心修正：移除 150px 限制，准許卡片縮小嚟並排 */
-		height: 140px !important;
-		margin: 0 !important;
-		padding: 12px 10px !important; /* 縮減內邊距防止文字溢出 */
-	}
-	/* 手機版字體微調，防止兩列太擠 */
+	.my-cards-grid-inner .card { width: 100% !important; min-width: 0 !important; height: 140px !important; padding: 12px 10px !important; }
 	.my-cards-grid-inner .name-cn { font-size: 14px !important; }
-	.my-cards-grid-inner .name-en { font-size: 8px !important; padding-left: 0 !important; }
-	.my-cards-grid-inner .card-icon { font-size: 16px !important; }
+	.my-cards-grid-inner .name-en { display: none !important; }
 }
-
-	/* ----------------------------------------------------------- */
-/* ----------------------------------------------------------- */
-	/* 1. [修正] EDIT MY SPOT: 標題喺上，輸入框喺下 (跟足 ADD NEW SPOT) */
-	/* ----------------------------------------------------------- */
-	#user-spot-modal .modal-body > div {
-		display: flex !important;
-		flex-direction: column !important; /* 🚀 變返上下排 */
-		align-items: flex-start !important;
-		margin-bottom: 16px !important;
-		width: 100% !important;
-	}
-
-	#user-spot-modal label {
-		width: 100% !important; /* 標題攞晒成行，顯示晒所有內容 */
-		margin-bottom: 8px !important; /* 同下面個框留返位 */
-		font-weight: bold !important;
-		font-size: 14px !important;
-		color: var(--accent) !important;
-		white-space: normal !important; /* 容許長度自動伸展 */
-		text-align: left !important;
-	}
-
-	#user-spot-modal input, 
-	#user-spot-modal select, 
-	#user-spot-modal textarea {
-		width: 100% !important; /* 框框攞晒成行 */
-		box-sizing: border-box !important; /* 確保唔會爆開 */
-		padding: 10px !important;
-		border-radius: 8px !important;
-		border: 1px solid #ddd !important;
-	}
-
-	/* ----------------------------------------------------------- */
-	/* 2. [修正] TAGS MANAGEMENT: 掣位絕對鎖死喺框內最右 */
-	/* ----------------------------------------------------------- */
-	.tag-item {
-		display: flex !important;
-		justify-content: space-between !important; /* 名喺左，掣喺右 */
-		align-items: center !important;
-		padding: 12px 15px !important;
-		box-sizing: border-box !important; /* 🚀 核心：強制將 Padding 計入闊度，唔會凸出嚟 */
-		width: 100% !important;
-		background: #f9f9f9 !important;
-		border-radius: 12px !important;
-		margin-bottom: 10px !important;
-		border: 1px solid var(--line) !important;
-		overflow: hidden !important;
-	}
-
-	/* 處理 Tag 名，確保唔會迫走啲掣 */
-	.tag-item span:first-child {
-		flex: 1 !important;
-		white-space: nowrap !important;
-		overflow: hidden !important;
-		text-overflow: ellipsis !important;
-		margin-right: 15px !important;
-		font-weight: 800 !important;
-	}
-
-	/* 鎖死兩粒掣嘅容器 */
-	.tag-item-buttons, 
-	.tag-item .actions {
-		display: flex !important;
-		gap: 8px !important;
-		flex-shrink: 0 !important; /* 🚀 核心：唔准縮細，唔准被名迫走 */
-		margin-left: auto !important; /* 靠最右對齊 */
-	}
-
-	.tag-item button {
-		padding: 6px 12px !important;
-		font-size: 11px !important;
-		font-weight: 900 !important;
-		border-radius: 6px !important;
-		white-space: nowrap !important; /* 掣入面嘅字唔准換行 */
-	}
     </style>
 </head>
 <body onclick="void(0)">
@@ -345,8 +303,8 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
             <div class="action-row">
                 <div class="action-btn btn-bounce" onclick="alert('MAP 開發中')">MAP</div>
                 <div class="action-btn btn-bounce" onclick="openTagsModal()">TAGS</div>
-                <div class="action-btn btn-bounce" onclick="openAddModal()">ADD</div>
-                <div class="action-btn btn-bounce" onclick="openMyCards()">MY CARDS</div>
+                <div class="action-btn btn-bounce" onclick="openAddModal()">ADD ATTRACTION</div>
+                <div class="action-btn btn-bounce" onclick="openMyCards()">TAGGED ATTRACTIONS</div>
             </div>
         </div>
         <div class="status-bar" id="status-display">讀取中...</div>
@@ -358,7 +316,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeTagsModal()">✕</span>
             <div class="modal-body">
-                <h2 style="font-weight:900; color:var(--accent); margin-bottom:20px;">TAGS MANAGEMENT</h2>
+                <h2 style="font-weight:900; color:var(--accent); margin-bottom:20px;">TAGS</h2>
                 <div style="display:flex; gap:10px; margin-bottom:20px;">
                     <button class="action-btn btn-bounce" style="flex:1; background:var(--accent); color:white; border:none;" onclick="createNewTag()">CREATE</button>
                     <button id="tag-del-label" class="action-btn btn-bounce" style="flex:1; background:var(--danger); color:white; border:none;" onclick="deleteSelectedTags()">DELETE (0)</button>
@@ -372,7 +330,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('my-cards-overlay')">✕</span>
             <div class="modal-body">
-                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">MY CARDS (EDIT / REMOVE)</h2>
+                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">REVIEW TAGGED ATTRACTIONS</h2>
                 <div class="grid" id="my-cards-grid"></div>
             </div>
         </div>
