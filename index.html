@@ -613,7 +613,12 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
 筥崎宮	Hakozakigu Shrine	觀光名勝	神社	日本三大八幡之一、勝運守護神、重要文化財「伏敵門」、古董市集、四季花卉	福岡東區	地鐵箱崎宮前站	擁有超過千年歷史的筥崎宮，是福岡極具分量的精神支柱。這裡以「勝利之神」著稱，連當地的福岡軟銀鷹隊與福岡黃蜂隊在球季前都會前來參拜。壯觀的樓門上掛著著名的「敵國降伏」匾額，展現出強烈的歷史威嚴感。神社境內四季皆美，尤以夏季的繡球花祭與百合花祭最為動人。此外，這裡定期舉辦的「風潮古董市集」是全九州最大規模，吸引無數喜愛高品質古物的收藏家到訪。走在寬闊的表參道上，能感受到一股穿越時空的沈靜力量，是深度體驗日本傳統祭禮文化與感受「必勝」信念能量的最佳場所。	https://youtu.be/U0DvuICj8ss?si=aCHQz9Slpfc7MmSW	https://maps.app.goo.gl/7Ar4F2hi9pusmgDE7	
 海之中道海濱公園	Uminonakamichi Seaside Park	觀光名勝	公園	四季壯麗花海（如春季粉蝶花）、佔地廣闊適合單車環遊、動物森林可近距離接觸、大型兒童遊樂場設施。	福岡東區	海之中道車站、海洋世界海之中道	位於福岡市東區的「海之中道海濱公園」，是一座佔地廣達約 300 公頃的國營公園，坐落於連結博多市區與志賀島的沙洲之上，擁有玄界灘與博多灣的絕美雙向海景。園內以四季更迭的壯麗花海聞名，特別是春季盛開的「粉蝶花」將山丘染成一片湛藍，與天空連成一線，是福岡最具代表性的視覺盛宴。除了視覺饗宴，園內的「動物森林」更提供近距離觀察水豚、袋鼠的療癒體驗，加上規劃完美的單車道與超大型溜滑梯，使其成為親子旅遊與自然愛好者的首選聖地。這裡展現了繁忙都會中難得的寬闊感與生態多樣性，無論是午後野餐或是整日深度遊覽，都能讓旅人在海風徐徐中找回身心的平衡。	https://youtu.be/I-yTHG5hKa8?si=CVezkw30YwHhPOfQ	https://maps.app.goo.gl/BaZEnugajmkmd9sT8	1`; 
 
-        let attractions = [], userRatings = {}, activeFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }, sectionStates = { tags: false, reg: false, cat: false, catType: false, recom: false };
+        let attractions = [], userRatings = {}, 
+            activeFilters = { source: [], tags: [], reg: [], cat: [], catType: [], recom: [] }, 
+            tempFilters = { source: [], tags: [], reg: [], cat: [], catType: [], recom: [] }, 
+            sectionStates = { source: false, tags: false, reg: false, cat: false, catType: false, recom: false };
+		
+		
         let tagDefs = [], spotToTags = {}, tagChecklist = new Set();
         const ICON_MAP = { '美食餐廳': '🍽️', '餐廳': '🍽️', '購物採買': '🛍️', '購物': '🛍️', '觀光名勝': '⛩️', '觀光': '⛩️', '主題體驗': '🎪', '主題': '🎪', '人氣打卡': '📸', '人氣': '📸', '隱密秘境': '🤫', '隱密': '🤫' };
         const uniqueRegs = ["博多", "天神", "中洲", "糸島", "熊本", "太宰府"];
@@ -676,12 +681,23 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             grid.innerHTML = attractions.map(item => {
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
                 if (rating === '0') return '';
+                
                 const itemTagId = spotToTags[item.id] || "untagged";
+                const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
+                
+                // 🚀 過濾邏輯連動
                 const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
+                const matchSource = (sel.source.length === 0 || sel.source.includes(itemSource));
+                const matchReg = (sel.reg.length === 0 || sel.reg.includes(item.reg));
+                const matchCat = (sel.cat.length === 0 || sel.cat.includes(item.cat));
+                const matchCatType = (sel.catType.length === 0 || sel.catType.includes(item.catType));
+                const matchRecom = (sel.recom.length === 0 || sel.recom.includes(rating));
+                
                 const tDef = tagDefs.find(d => String(d.id) === String(itemTagId));
                 const tagName = (tDef && tDef.name) ? String(tDef.name).normalize('NFC') : "";
                 const searchStr = [item.cn, item.en, item.reg, item.cat, item.catType, tagName].map(v => (v || "").normalize('NFC').toLowerCase()).join(" ");
-                const match = matchTag && (sel.reg.length === 0 || sel.reg.includes(item.reg)) && (sel.cat.length === 0 || sel.cat.includes(item.cat)) && (sel.catType.length === 0 || sel.catType.includes(item.catType)) && (sel.recom.length === 0 || sel.recom.includes(rating)) && (searchStr.includes(query));
+                
+                const match = matchTag && matchSource && matchReg && matchCat && matchCatType && matchRecom && (searchStr.includes(query));
                 if (!match) return '';
                 count++; return generateCardHtml(item);
             }).join('');
@@ -731,55 +747,104 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             document.querySelectorAll('.tag-select').forEach(s => s.classList.toggle('has-val', s.value !== ""));
         }
 
-        // --- 🧪 Filter UI (恢復全功能) ---
+        // 🧪 輔助：獲取某一類別所有「理論上存在」嘅選項名單
+        function getAllPossibleValues(k) {
+            if (k === 'source') return ['system', 'user'];
+            if (k === 'recom') return ['1', '2', '3', ''];
+            if (k === 'tags') return ['untagged', ...tagDefs.map(d => d.id)];
+            return [...new Set(attractions.map(a => a[k]).filter(v => v))].sort();
+        }
+
+        // 🧪 核心：計算目前哪些選項是「有數據掛鉤」的（連動鎖定邏輯）
+        function getAvailableSet(key) {
+            const pool = attractions.filter(item => {
+                const itemTag = spotToTags[item.id] || "untagged";
+                const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
+                const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
+                // 🚀 關鍵：計算連動時，要考慮除「自己類別」以外的所有篩選條件
+                return (key === 'source' || tempFilters.source.length === 0 || tempFilters.source.includes(itemSource)) &&
+                       (key === 'tags' || tempFilters.tags.length === 0 || tempFilters.tags.includes(itemTag)) &&
+                       (key === 'reg' || tempFilters.reg.length === 0 || tempFilters.reg.includes(item.reg)) &&
+                       (key === 'cat' || tempFilters.cat.length === 0 || tempFilters.cat.includes(item.cat)) &&
+                       (key === 'catType' || tempFilters.catType.length === 0 || tempFilters.catType.includes(item.catType)) &&
+                       (key === 'recom' || tempFilters.recom.length === 0 || tempFilters.recom.includes(rating));
+            });
+            return new Set(pool.map(i => {
+                if (key === 'source') return i.id.startsWith('user-') ? 'user' : 'system';
+                if (key === 'tags') return spotToTags[i.id] || "untagged";
+                if (key === 'recom') return userRatings[i.id] !== undefined ? userRatings[i.id] : (i.baseRecom || '');
+                return i[key];
+            }));
+        }
+
         function initFilters() {
             const container = document.getElementById('dynamic-filter-container'); if(!container) return;
-            const getLinkedData = (key) => {
-                const filteredSubset = attractions.filter(item => {
-                    const itemTag = spotToTags[item.id] || "untagged";
-                    const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
-                    return (key === 'tags' || tempFilters.tags.length === 0 || tempFilters.tags.includes(itemTag)) &&
-                           (key === 'reg' || tempFilters.reg.length === 0 || tempFilters.reg.includes(item.reg)) &&
-                           (key === 'cat' || tempFilters.cat.length === 0 || tempFilters.cat.includes(item.cat)) &&
-                           (key === 'catType' || tempFilters.catType.length === 0 || tempFilters.catType.includes(item.catType)) &&
-                           (key === 'recom' || tempFilters.recom.length === 0 || tempFilters.recom.includes(rating));
-                });
-                if (key === 'tags') {
-                    const currentValidIds = [...new Set(filteredSubset.map(i => spotToTags[i.id] || "untagged"))];
-                    return [{v: "untagged", n: "🚫 未設定標籤", disabled: !currentValidIds.includes("untagged")}, ...tagDefs.map(d => ({v: d.id, n: d.name, disabled: !currentValidIds.includes(d.id)}))];
-                }
-                if (key === 'recom') {
-                    const avail = [...new Set(filteredSubset.map(i => userRatings[i.id] !== undefined ? userRatings[i.id] : (i.baseRecom || '')))];
-                    return [{v:"1",n:"🔍 探索"},{v:"2",n:"👍 認眼"},{v:"3",n:"必去🙋"},{v:"",n:"未評測"}].map(opt => ({...opt, disabled: !avail.includes(opt.v)}));
-                }
-                const availVals = [...new Set(filteredSubset.map(i => i[key]).filter(v=>v))];
-                return [...new Set(attractions.map(i => i[key]).filter(v=>v))].sort().map(v => ({v, n: v, disabled: !availVals.includes(v)}));
-            };
-            const labels = { tags: "行程標籤 (TAG)", reg: "區域", cat: "類別", catType: "類別內容", recom: "推薦評分" };
+            const labels = { source: "提供來源", tags: "行程標籤 (TAG)", reg: "區域", cat: "類別", catType: "類別內容", recom: "推薦評分" };
+            
             container.innerHTML = Object.keys(labels).map(key => {
-                const isOpen = sectionStates[key], items = getLinkedData(key), isAllSelected = tempFilters[key].length === 0;
+                const isOpen = sectionStates[key];
+                const allPossible = getAllPossibleValues(key);
+                const availableSet = getAvailableSet(key); // 🚀 攞依家仲有卡片掛鉤嘅名單
+                const currentSelected = tempFilters[key];
+                const isAllSelected = currentSelected.length === 0;
+
+                const pillsHtml = allPossible.map(val => {
+                    const isAvailable = availableSet.has(val); // 🚀 冇掛鉤就變「死燈」
+                    const isActive = isAllSelected || currentSelected.includes(val);
+                    
+                    let name = val;
+                    if (key === 'source') name = (val === 'system' ? '系統' : '使用者');
+                    if (key === 'recom') name = ({'1':'🔍 探索','2':'👍 認證','3':'必去🙋','': '未評測'}[val]);
+                    if (key === 'tags') name = (val === 'untagged' ? "🚫 未設定標籤" : tagDefs.find(d => d.id === val)?.name || val);
+
+                    // 🚀 如果唔係 available，就加 disabled class 兼鎖死 onclick
+                    return `<div class="pill btn-bounce ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}" 
+                                 onclick="${isAvailable ? `togglePill('${key}','${val}')` : ''}">${name}</div>`;
+                }).join('');
+
                 return `<div class="filter-section ${isOpen?'open':''}">
                     <div class="filter-header btn-bounce" onclick="toggleSec('${key}')"><span>${labels[key]}</span><span class="filter-arrow">▶</span></div>
                     <div class="filter-expand-area" style="display: ${isOpen ? 'block' : 'none'}">
-                        <label class="master-row btn-bounce"><input type="checkbox" ${isAllSelected?'checked':''} onchange="toggleMaster('${key}')"> <span>全部選取</span></label>
-                        <div class="pill-box">${items.map(opt => `<div class="pill btn-bounce ${isAllSelected || tempFilters[key].includes(opt.v)?'active':''} ${opt.disabled?'disabled':''}" onclick="togglePill('${key}','${opt.v}')">${opt.n}</div>`).join('')}</div>
+                        <label class="master-row btn-bounce">
+                            <input type="checkbox" ${isAllSelected ? 'checked' : ''} onchange="toggleMaster('${key}')"> 
+                            <span>全部選取</span>
+                        </label>
+                        <div class="pill-box">${pillsHtml}</div>
                     </div></div>`;
             }).join('');
         }
+
         function toggleSec(k){ sectionStates[k]=!sectionStates[k]; initFilters(); }
-        function toggleMaster(k){ tempFilters[k] = tempFilters[k].length === 0 ? ["__NONE__"] : []; initFilters(); }
-        function togglePill(k, v){
-            if (tempFilters[k].length === 0) {
-                if (k === 'tags') tempFilters[k] = ["untagged", ...tagDefs.map(d => d.id)];
-                else if (k === 'recom') tempFilters[k] = ["1","2","3",""];
-                else tempFilters[k] = [...new Set(attractions.map(a => a[k]))];
-            }
-            const idx = tempFilters[k].indexOf(v);
-            if (idx > -1) tempFilters[k].splice(idx, 1); else tempFilters[k].push(v);
-            if (tempFilters[k].length === 0) tempFilters[k] = [];
+
+        function toggleMaster(k) {
+            // 如果原本全選 -> 變全熄；否則變回全選
+            tempFilters[k] = (tempFilters[k].length === 0) ? ["__NONE__"] : [];
             initFilters();
         }
 
+        function togglePill(k, v) {
+            const availableSet = getAvailableSet(k);
+            let list = [];
+
+            // 1. 決定目前開關嘅基礎
+            if (tempFilters[k].length === 0) {
+                list = [...availableSet].filter(item => item !== v); // 原本全著，撳一粒就係熄嗰粒
+            } else if (tempFilters[k][0] === "__NONE__") {
+                list = [v]; // 原本全熄，撳一粒就著嗰粒
+            } else {
+                const idx = tempFilters[k].indexOf(v);
+                list = [...tempFilters[k]];
+                if (idx > -1) list.splice(idx, 1);
+                else list.push(v);
+            }
+
+            // 2. 自動校正歸位 (連動全部選取)
+            if (list.length === 0) tempFilters[k] = ["__NONE__"];
+            else if (list.length >= availableSet.size) tempFilters[k] = [];
+            else tempFilters[k] = list;
+
+            initFilters();
+        }
         // --- 🎨 詳細視窗 & 編輯視窗 ---
         function openDetail(id) {
             const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
@@ -954,7 +1019,15 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
 
         // --- 通用輔助 ---
         function applyFilters(){ activeFilters = JSON.parse(JSON.stringify(tempFilters)); render(); closeModal('filter-overlay'); }
-        function resetAllFilters(){ tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }; initFilters(); }
+        function resetAllFilters() {
+            // 1. 全部變回空陣列 = 全部選取打勾
+            tempFilters = { source: [], tags: [], reg: [], cat: [], catType: [], recom: [] };
+            // 2. 重新 Render UI，勾勾同燈會全部返嚟
+            initFilters();
+            // 3. 即時應用到背景
+            activeFilters = JSON.parse(JSON.stringify(tempFilters)); 
+            render();
+        }
         function openFilterModal(){ tempFilters = JSON.parse(JSON.stringify(activeFilters)); initFilters(); openModal('filter-overlay'); }
         function deleteSpot(id) {
             if(confirm("確定刪除？")) { 
