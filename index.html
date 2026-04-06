@@ -535,14 +535,17 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             } catch(e) { }
         }
 
-        // 🚀 [修復] 固定 ID 邏輯，確保存檔 Refresh 唔會消失
+        // 🚀 [V133.00 FINAL] 純排位 ID：絕對唔用任何景點資料，唔驚改名，只需保證 Excel 尾部疊加
         function parseTSV(rawText) {
             if(!rawText || !rawText.trim()) return [];
             return rawText.trim().split(/\r?\n/).map((line, i) => {
                 const cols = line.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
                 if (i === 0 && (cols[0].includes("中文") || cols[2].includes("類別"))) return null;
                 if (!cols[0]) return null;
-                const safeId = "b-" + i + "-" + encodeURIComponent(cols[0].substring(0,3));
+                
+                // 🎯 核心修正：ID 淨係用 "b-" 加 "行數"，完全唔睇名，完全唔睇 Link。
+                const safeId = "b-" + i; 
+                
                 return { id: safeId, cn: cols[0], en: cols[1], cat: cols[2], catType: cols[3], points: cols[4], reg: cols[5], nearby: cols[6], intro: cols[7], ref: cols[8], nav: cols[9], baseRecom: cols[10] };
             }).map(item => item ? { ...item, icon: getIcon(item.cat) } : null).filter(item => item !== null);
         }
