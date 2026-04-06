@@ -676,7 +676,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             const grid = document.getElementById('card-grid');
             if (!grid) return;
             const query = (document.getElementById('search-input').value || "").normalize('NFC').trim().toLowerCase();
-            const sel = activeFilters;
+            const sel = activeFilters; // 🚀 使用正式生效的 activeFilters
             let count = 0;
             grid.innerHTML = attractions.map(item => {
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
@@ -740,28 +740,13 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         }
         function saveTags() { localStorage.setItem('zine_tag_defs', JSON.stringify(tagDefs)); localStorage.setItem('zine_spot_tags', JSON.stringify(spotToTags)); }
         
-        function assignTag(sid, tid) { 
-            if(tid) spotToTags[sid] = tid; else delete spotToTags[sid]; 
-            saveTags(); render(); 
-            if(document.getElementById('my-cards-overlay').classList.contains('active')) { openMyCards(false); }
-            document.querySelectorAll('.tag-select').forEach(s => s.classList.toggle('has-val', s.value !== ""));
-        }
-
-        // 🧪 輔助：獲取某一類別所有「理論上存在」嘅選項名單
-        function getAllPossibleValues(k) {
-            if (k === 'source') return ['system', 'user'];
-            if (k === 'recom') return ['1', '2', '3', ''];
-            if (k === 'tags') return ['untagged', ...tagDefs.map(d => d.id)];
-            return [...new Set(attractions.map(a => a[k]).filter(v => v))].sort();
-        }
-
-        // 🧪 核心：計算目前哪些選項是「有數據掛鉤」的（連動鎖定邏輯）
+        // 🧪 核心：計算目前哪些選項仲有卡片掛鉤 (Available)
         function getAvailableSet(key) {
             const pool = attractions.filter(item => {
                 const itemTag = spotToTags[item.id] || "untagged";
                 const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
-                // 🚀 關鍵：計算連動時，要考慮除「自己類別」以外的所有篩選條件
+                // 🚀 關鍵：排除自己類別的過濾，計算其他類別剩餘的景點
                 return (key === 'source' || tempFilters.source.length === 0 || tempFilters.source.includes(itemSource)) &&
                        (key === 'tags' || tempFilters.tags.length === 0 || tempFilters.tags.includes(itemTag)) &&
                        (key === 'reg' || tempFilters.reg.length === 0 || tempFilters.reg.includes(item.reg)) &&
@@ -777,27 +762,30 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             }));
         }
 
+        // 🧪 獲取全體名單
+        function getAllPossibleValues(k) {
+            if (k === 'source') return ['system', 'user'];
+            if (k === 'recom') return ['1', '2', '3', ''];
+            if (k === 'tags') return ['untagged', ...tagDefs.map(d => d.id)];
+            return [...new Set(attractions.map(a => a[k]).filter(v => v))].sort();
+        }
+
         function initFilters() {
             const container = document.getElementById('dynamic-filter-container'); if(!container) return;
             const labels = { source: "提供來源", tags: "行程標籤 (TAG)", reg: "區域", cat: "類別", catType: "類別內容", recom: "推薦評分" };
-            
             container.innerHTML = Object.keys(labels).map(key => {
-                const isOpen = sectionStates[key];
-                const allPossible = getAllPossibleValues(key);
-                const availableSet = getAvailableSet(key); // 🚀 攞依家仲有卡片掛鉤嘅名單
-                const currentSelected = tempFilters[key];
-                const isAllSelected = currentSelected.length === 0;
+                const isOpen = sectionStates[key], allPossible = getAllPossibleValues(key), availableSet = getAvailableSet(key);
+                const currentSelected = tempFilters[key], isAllSelected = currentSelected.length === 0;
 
                 const pillsHtml = allPossible.map(val => {
-                    const isAvailable = availableSet.has(val); // 🚀 冇掛鉤就變「死燈」
+                    const isAvailable = availableSet.has(val); 
                     const isActive = isAllSelected || currentSelected.includes(val);
-                    
                     let name = val;
                     if (key === 'source') name = (val === 'system' ? '系統' : '使用者');
                     if (key === 'recom') name = ({'1':'🔍 探索','2':'👍 認證','3':'必去🙋','': '未評測'}[val]);
                     if (key === 'tags') name = (val === 'untagged' ? "🚫 未設定標籤" : tagDefs.find(d => d.id === val)?.name || val);
 
-                    // 🚀 如果唔係 available，就加 disabled class 兼鎖死 onclick
+                    // 🚀 如果唔 Available 就變死燈樣式兼鎖死
                     return `<div class="pill btn-bounce ${isActive ? 'active' : ''} ${!isAvailable ? 'disabled' : ''}" 
                                  onclick="${isAvailable ? `togglePill('${key}','${val}')` : ''}">${name}</div>`;
                 }).join('');
@@ -805,75 +793,49 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 return `<div class="filter-section ${isOpen?'open':''}">
                     <div class="filter-header btn-bounce" onclick="toggleSec('${key}')"><span>${labels[key]}</span><span class="filter-arrow">▶</span></div>
                     <div class="filter-expand-area" style="display: ${isOpen ? 'block' : 'none'}">
-                        <label class="master-row btn-bounce">
-                            <input type="checkbox" ${isAllSelected ? 'checked' : ''} onchange="toggleMaster('${key}')"> 
-                            <span>全部選取</span>
-                        </label>
+                        <label class="master-row btn-bounce"><input type="checkbox" ${isAllSelected?'checked':''} onchange="toggleMaster('${key}')"> <span>全部選取</span></label>
                         <div class="pill-box">${pillsHtml}</div>
                     </div></div>`;
             }).join('');
         }
 
         function toggleSec(k){ sectionStates[k]=!sectionStates[k]; initFilters(); }
-
-        function toggleMaster(k) {
-            // 如果原本全選 -> 變全熄；否則變回全選
-            tempFilters[k] = (tempFilters[k].length === 0) ? ["__NONE__"] : [];
-            initFilters();
-        }
+        function toggleMaster(k) { tempFilters[k] = (tempFilters[k].length === 0) ? ["__NONE__"] : []; initFilters(); }
 
         function togglePill(k, v) {
             const availableSet = getAvailableSet(k);
-            let list = [];
-
-            // 1. 決定目前開關嘅基礎
-            if (tempFilters[k].length === 0) {
-                list = [...availableSet].filter(item => item !== v); // 原本全著，撳一粒就係熄嗰粒
-            } else if (tempFilters[k][0] === "__NONE__") {
-                list = [v]; // 原本全熄，撳一粒就著嗰粒
-            } else {
-                const idx = tempFilters[k].indexOf(v);
-                list = [...tempFilters[k]];
-                if (idx > -1) list.splice(idx, 1);
-                else list.push(v);
-            }
-
-            // 2. 自動校正歸位 (連動全部選取)
+            let list = (tempFilters[k].length === 0) ? [...availableSet] : (tempFilters[k][0] === "__NONE__") ? [] : [...tempFilters[k]];
+            const idx = list.indexOf(v);
+            if (idx > -1) list.splice(idx, 1); else list.push(v);
             if (list.length === 0) tempFilters[k] = ["__NONE__"];
             else if (list.length >= availableSet.size) tempFilters[k] = [];
             else tempFilters[k] = list;
-
             initFilters();
         }
+		
         // --- 🎨 詳細視窗 & 編輯視窗 ---
         function openDetail(id) {
             const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
-            
-            // 1. 每次打開都要重設 Slider 去左邊 (詳情頁)
             const slider = document.getElementById('modal-slider');
             slider.style.transform = 'translateX(0)';
             
-            // 2. 判斷係咪 User Spot，係就顯示 EDIT 掣
             const actionBtn = document.getElementById('modal-action-btn');
             actionBtn.innerText = "EDIT";
-            // 🚀 重設 Class，確保一開出嚟係紅色狀態
             actionBtn.className = "btn-bounce state-edit"; 
-            
-            if(id.startsWith('user-')) {
-                actionBtn.style.display = 'block'; // 顯示出嚟
-            } else {
-                actionBtn.style.display = 'none';  // Hardcode 景點就唔好出呢粒掣
-            }
+            actionBtn.style.display = id.startsWith('user-') ? 'block' : 'none';
 
-            // 3. 渲染左面：詳情內容
             const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
             const tid = spotToTags[item.id] || "";
             const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
-            const tagDrop = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
+
+            // 🚀 [左版面] Tag Dropdown：保留 onchange="assignTag"，即揀即更新
+            const tagDropDetail = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
+            
             let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
             
+            // 渲染詳情頁
             document.getElementById('det-content').innerHTML = `
-                <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDrop}</div>
+                <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDropDetail}</div>
                 <div class="layer-title-row">
                     <div class="title-group"><div class="det-cn">${item.cn}</div><div class="det-en">${getVal(item.en, "---")}</div></div>
                     <div id="det-recom-sticker" class="recom-sticker btn-bounce rated" onclick="toggleRating('${item.id}')">${{'1':'🔍','2':'👍','3':'🙋','':'待定'}[rating]}</div>
@@ -884,12 +846,16 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
                 <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
 
-            // 4. 預先準備右面：編輯表單 (User Spot 專屬)
+            // 🚀 [右版面] 編輯表單：攞走 onchange 嘅 assignTag，改為純視覺切換
             if(id.startsWith('user-')) {
-                tempAddRating = rating;
-                const curTag = spotToTags[item.id] || "";
+                tempAddRating = rating; 
                 document.getElementById('edit-form-injection').innerHTML = `
-                    <div class="tag-dropdown-wrapper"><select class="tag-select ${curTag?'has-val':''}" id="ed-tag-select" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===curTag?'selected':''}>${d.name}</option>`).join('')}</select></div>
+                    <div class="tag-dropdown-wrapper">
+                        <select class="tag-select ${tid?'has-val':''}" id="ed-tag-select" onchange="this.classList.toggle('has-val', this.value !== '')">
+                            <option value="">Tag 待定</option>
+                            ${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}
+                        </select>
+                    </div>
                     <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div>
                     <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
                     <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
@@ -961,27 +927,33 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         }
 
         function updateSpot(id) {
-            const cn = document.getElementById('ed-cn').value.trim(), nav = document.getElementById('ed-nav').value.trim();
+            const cn = document.getElementById('ed-cn').value.trim(), 
+                  nav = document.getElementById('ed-nav').value.trim(),
+                  newTag = document.getElementById('ed-tag-select').value; // 🚀 獲取編輯頁的 Tag 值
+            
             if(!cn || !nav) { alert("必填項目不可為空！"); return; }
             
             let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
             const idx = list.findIndex(a => String(a.id) === String(id));
             
             if(idx > -1) { 
-                // 1. 更新資料
+                // 1. 更新景點內容
                 list[idx] = { ...list[idx], cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value };
                 localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
+                
+                // 2. 更新評分
                 userRatings[id] = tempAddRating; 
                 localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
 
-                // 2. 重新整理底層數據
+                // 3. 🚀 更新 Tag (只有喺呢度撳咗 UPDATE 先會真正改 spotToTags)
+                if(newTag) spotToTags[id] = newTag; else delete spotToTags[id];
+                saveTags();
+
                 initAppData(); 
                 render(); 
 
-                // 3. 🚀 核心：滑動返轉頭去「詳細內容」頁面
+                // 4. 滑動返轉頭去「詳細內容」並重新整理
                 toggleEditFlow(); 
-                
-                // 4. 🚀 核心：重新 Render 詳細內容（等佢顯示更新咗嘅字）
                 openDetail(id); 
             }
         }
@@ -1018,58 +990,32 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         function toggleMyCardsFilter(checked) { isUserOnlyMode = checked; openMyCards(false); }
 
         // --- 通用輔助 ---
-        function applyFilters(){ activeFilters = JSON.parse(JSON.stringify(tempFilters)); render(); closeModal('filter-overlay'); }
-        function resetAllFilters() {
-            // 1. 全部變回空陣列 = 全部選取打勾
-            tempFilters = { source: [], tags: [], reg: [], cat: [], catType: [], recom: [] };
-            // 2. 重新 Render UI，勾勾同燈會全部返嚟
-            initFilters();
-            // 3. 即時應用到背景
-            activeFilters = JSON.parse(JSON.stringify(tempFilters)); 
-            render();
+        // 🚀 只有撳 APPLY 掣，先將臨時緩衝區 (temp) 轉正 (active)，並重新 Render 背景景點
+        // 🚀 核心：打開視窗做 Snapshot 快照備份
+        function openFilterModal() {
+            // 複製一份 active 到 temp，咁樣喺裡面亂撳都唔會即時更新背景
+            tempFilters = JSON.parse(JSON.stringify(activeFilters)); 
+            initFilters(); 
+            openModal('filter-overlay'); 
         }
-        function openFilterModal(){ tempFilters = JSON.parse(JSON.stringify(activeFilters)); initFilters(); openModal('filter-overlay'); }
-        function deleteSpot(id) {
-            if(confirm("確定刪除？")) { 
-                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); 
-                list = list.filter(a => String(a.id) !== String(id)); 
-                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
-                delete spotToTags[id]; 
-                saveTags(); 
-                
-                initAppData(); 
-                render(); 
 
-                // 🚀 核心：刪除後直接關閉成個 Detail 視窗，唔好再彈 Tagged 頁出嚟
-                closeModal('detail-overlay'); 
-            } 
-        }
-        // 🚀 修正：撳掣後即時更新埋彈出視窗嘅視覺
-        function toggleRating(id) {
-            const m = {'':'1','1':'2','2':'3','3':''};
-            userRatings[id] = m[userRatings[id]||''];
-            localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
-            
-            // 1. 更新主頁面背景
+        // 🚀 核心：只有撳 APPLY 掣，緩衝數據先會正式生效
+        function applyFilters() {
+            activeFilters = JSON.parse(JSON.stringify(tempFilters)); 
             render(); 
-            
-            // 2. 🚀 [關鍵修正] 如果詳情視窗開緊，都要即刻重新 Render 視窗內容，否則粒掣唔會識變
-            if(document.getElementById('detail-overlay').classList.contains('active')) {
-                openDetail(id); 
-            }
-            
-            // 3. 如果 MY CARDS 視窗開緊，都同步更新
-            if(document.getElementById('my-cards-overlay').classList.contains('active')) {
-                openMyCards(false);
-            }
+            closeModal('filter-overlay'); 
         }
-        function cycleAddRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('add-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
-        function cycleEditRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('ed-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
+
+        function resetAllFilters() {
+            tempFilters = { source: [], tags: [], reg: [], cat: [], catType: [], recom: [] };
+            initFilters();
+        }
+
+		// 🚀 [歸位零件 1] 彈窗控制中心
         function openModal(id) {
             const el = document.getElementById(id);
             if (!el) return;
             el.style.display = 'flex';
-            // 🚀 核心：幫 body 加 class 鎖死滾動
             document.body.classList.add('modal-open');
             setTimeout(() => el.classList.add('active'), 10);
         }
@@ -1080,22 +1026,67 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             el.classList.remove('active');
             setTimeout(() => {
                 el.style.display = 'none';
-                // 🚀 核心：如果冇晒 active 嘅 modal 先解鎖
                 if (!document.querySelector('.modal-overlay.active')) {
                     document.body.classList.remove('modal-open');
                 }
             }, 300);
         }
 
-		// 🚀 清除紀錄功能：清空所有評分、標籤對應同自建景點
-        function clearAllData() {
-            if (confirm("⚠️ 確定要清除所有紀錄嗎？\n這將會清空：\n1. 所有景點評分\n2. 所有標籤對應\n3. 你自己建立的景點\n\n此動作無法還原！")) {
-                localStorage.clear(); // 徹底抹除所有儲存紀錄
-                location.reload();    // 重新載入 App，變回最原始狀態
+        // 🚀 [歸位零件 2] 評分與刪除功能
+        function toggleRating(id) {
+            const m = {'':'1','1':'2','2':'3','3':''};
+            userRatings[id] = m[userRatings[id]||''];
+            localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
+            render(); 
+            if(document.getElementById('detail-overlay').classList.contains('active')) {
+                openDetail(id); 
+            }
+            if(document.getElementById('my-cards-overlay').classList.contains('active')) {
+                openMyCards(false);
             }
         }
 
-        window.onload = function() { initAppData(); render(); };
+        function cycleAddRating() { 
+            const m={'':'1','1':'2','2':'3','3':''}; 
+            tempAddRating=m[tempAddRating]; 
+            const s=document.getElementById('add-recom-sticker'); 
+            s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; 
+            s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; 
+        }
+
+        function cycleEditRating() { 
+            const m={'':'1','1':'2','2':'3','3':''}; 
+            tempAddRating=m[tempAddRating]; 
+            const s=document.getElementById('ed-recom-sticker'); 
+            s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; 
+            s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; 
+        }
+
+        function deleteSpot(id) {
+            if(confirm("確定刪除？")) { 
+                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); 
+                list = list.filter(a => String(a.id) !== String(id)); 
+                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
+                delete spotToTags[id]; 
+                saveTags(); 
+                initAppData(); 
+                render(); 
+                closeModal('detail-overlay'); 
+            } 
+        }
+
+        function clearAllData() {
+            if (confirm("⚠️ 確定要清除所有紀錄嗎？\n這將會清空所有評分、標籤及自建景點，且無法還原！")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // 🎯 全份代碼唯一的入口點
+        window.onload = function() { 
+            initAppData(); 
+            render(); 
+        };
 
 		
     </script>
