@@ -253,6 +253,69 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 	.my-cards-grid-inner .name-en { font-size: 8px !important; padding-left: 0 !important; }
 	.my-cards-grid-inner .card-icon { font-size: 16px !important; }
 }
+
+	/* ----------------------------------------------------------- */
+/* 1. EDIT MY SPOT: 強制橫向排列，標籤唔准換行 */
+/* ----------------------------------------------------------- */
+#user-spot-modal .modal-body > div {
+    display: flex !important;
+    flex-direction: row !important; /* 確保橫排 */
+    align-items: center !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+}
+
+#user-spot-modal label {
+    flex: 0 0 95px !important; /* 固定欄目名闊度為 95px */
+    text-align: left !important;
+    font-weight: bold !important;
+    margin-right: 10px !important;
+    white-space: nowrap !important; /* 🚀 核心：絕對唔准換行，顯示晒成個名 */
+    font-size: 14px !important;
+}
+
+#user-spot-modal input, 
+#user-spot-modal select, 
+#user-spot-modal textarea {
+    flex: 1 !important; /* 剩低嘅空間全部俾晒輸入框 */
+    min-width: 0 !important; /* 防止爆開容器 */
+}
+
+/* ----------------------------------------------------------- */
+/* 2. TAGS MANAGEMENT: 掣位鎖死喺框內最右 */
+/* ----------------------------------------------------------- */
+.tag-item {
+    display: flex !important;
+    justify-content: space-between !important; /* 🚀 名喺左，掣喺右 */
+    align-items: center !important;
+    padding: 10px 15px !important;
+    box-sizing: border-box !important; /* 確保 Padding 唔會撐爆個框 */
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* 處理 Tag 名稱太長嘅情況 */
+.tag-item > span:first-child {
+    flex: 1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important; /* 名太長會出 ... */
+    white-space: nowrap !important;
+    margin-right: 10px !important;
+}
+
+/* 鎖死掣位容器 */
+.tag-item-buttons, 
+.tag-item .actions {
+    display: flex !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important; /* 🚀 核心：鎖死兩粒掣，唔准縮，唔准出位 */
+    margin-left: auto !important; /* 推到最右 */
+}
+
+.tag-item button {
+    padding: 5px 12px !important;
+    white-space: nowrap !important; /* 掣入面嘅字都唔准換行 */
+}
     </style>
 </head>
 <body onclick="void(0)">
@@ -535,7 +598,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             } catch(e) { }
         }
 
-        // 🚀 [V133.00 FINAL] 純排位 ID：絕對唔用任何景點資料，唔驚改名，只需保證 Excel 尾部疊加
+        // 🚀 [V134.00] 穩定版：純排位 ID (b-i) + 詳情視窗刷新修正
         function parseTSV(rawText) {
             if(!rawText || !rawText.trim()) return [];
             return rawText.trim().split(/\r?\n/).map((line, i) => {
@@ -543,7 +606,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 if (i === 0 && (cols[0].includes("中文") || cols[2].includes("類別"))) return null;
                 if (!cols[0]) return null;
                 
-                // 🎯 核心修正：ID 淨係用 "b-" 加 "行數"，完全唔睇名，完全唔睇 Link。
+                // 🎯 核心：只用排位做 ID，唔用名，唔用資料。
                 const safeId = "b-" + i; 
                 
                 return { id: safeId, cn: cols[0], en: cols[1], cat: cols[2], catType: cols[3], points: cols[4], reg: cols[5], nearby: cols[6], intro: cols[7], ref: cols[8], nav: cols[9], baseRecom: cols[10] };
@@ -787,7 +850,25 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         function resetAllFilters(){ tempFilters = { tags: [], reg: [], cat: [], catType: [], recom: [] }; initFilters(); }
         function openFilterModal(){ tempFilters = JSON.parse(JSON.stringify(activeFilters)); initFilters(); openModal('filter-overlay'); }
         function deleteSpot(id) { if(confirm("確定刪除？")) { let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); list = list.filter(a => String(a.id) !== String(id)); localStorage.setItem('zine_user_spots', JSON.stringify(list)); delete spotToTags[id]; saveTags(); initAppData(); render(); closeModal('edit-overlay'); openMyCards(false); } }
-        function toggleRating(id) { const m={'':'1','1':'2','2':'3','3':''}; userRatings[id] = m[userRatings[id]||'']; localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); render(); if(document.getElementById('my-cards-overlay').classList.contains('active')) openMyCards(false); }
+        // 🚀 修正：撳掣後即時更新埋彈出視窗嘅視覺
+        function toggleRating(id) {
+            const m = {'':'1','1':'2','2':'3','3':''};
+            userRatings[id] = m[userRatings[id]||''];
+            localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
+            
+            // 1. 更新主頁面背景
+            render(); 
+            
+            // 2. 🚀 [關鍵修正] 如果詳情視窗開緊，都要即刻重新 Render 視窗內容，否則粒掣唔會識變
+            if(document.getElementById('detail-overlay').classList.contains('active')) {
+                openDetail(id); 
+            }
+            
+            // 3. 如果 MY CARDS 視窗開緊，都同步更新
+            if(document.getElementById('my-cards-overlay').classList.contains('active')) {
+                openMyCards(false);
+            }
+        }
         function cycleAddRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('add-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
         function cycleEditRating() { const m={'':'1','1':'2','2':'3','3':''}; tempAddRating=m[tempAddRating]; const s=document.getElementById('ed-recom-sticker'); s.innerText={'1':'🔍','2':'👍','3':'🙋','':'待定'}[tempAddRating]; s.className=`recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}`; }
         function openModal(id) {
