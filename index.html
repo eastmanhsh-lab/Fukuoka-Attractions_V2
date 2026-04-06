@@ -456,6 +456,8 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
     </div>
 
     <script>
+		let currentEditDraft = null; // 全域草稿對象，用嚟處理右頁編輯
+		
         const RAW_PASTED_DATA = `石原牛	Ishiharagyu	美食餐廳	燒肉店	高CP值和牛午餐、不到700台幣吃和牛套餐、平板自助點餐、A5和牛商業午餐超划算、平日中午限定優惠、和牛口感入口即化、需預約	福岡中洲	中洲川端站	這間位於中洲川端附近的「石原牛」是內行人才知道的頂級燒肉名店，特別是以高品質 A5 和牛著稱。強烈推薦其平日中午限定的商業午餐套餐，僅需不到 700 元台幣便能享受到油脂分布均勻、入口即化的頂級和牛，性價比極高且包含米飯、沙拉與湯品，視覺與味覺雙重享受甚至可媲美神戶牛。店內採用現代化的平板點餐系統，雖然介面目前暫無中文，但圖示清晰易懂，更提供貼心的自助換網服務，對外國旅客極為友善。其肉質鮮甜且份量十足，兩個人點一份頂級和牛盤配上特選套餐，平均每人僅需 500 台幣左右。由於店內經常滿座，建議務必事先上網預約，是來到博多市區想要體驗高品質燒肉卻又不想傷荷包的首選。	https://youtu.be/fe4Eockm0HM?t=100, https://youtu.be/nZam6eLh_6w?t=1511	https://maps.app.goo.gl/YJbnXVwjDwAcCoEx5	2
 JR博多城	JR Hakata City	購物	百貨商場	九州最大交通樞紐、寶可夢中心、Hands生活雜貨	福岡博多	博多站	博多車站不僅是交通中心，更是由 AMU PLAZA、博多阪急與博多丸井（OIOI）組成的巨型購物聚落。在 OIOI 百貨內設有廣大的福岡寶可夢中心，是帶孩子或愛好者必掃貨的地點；而 AMU PLAZA 則佔據多層樓的 Hands 雜貨，提供最新、最齊全的美妝與居家設計品。這裡交通極度便利，出站即可開始逛街，且各大百貨與地下街連成一片，無論是追求日系流行服飾或是尋找特色紀念品，博多車站都能提供一站式的滿足。特別是伴手禮區與百貨美食街，集結了福岡最負盛名的伴手禮名產，非常適合在旅程尾聲進行最後採買。	https://youtu.be/fe4Eockm0HM?t=496	https://maps.app.goo.gl/JjMaS5nwbkJrcu477	3
 FUK COFFEE	FUK COFFEE	美食餐廳	咖啡廳	絕美雞蛋焦糖布丁、飛機主題裝修、福岡IG打卡名店	福岡天神	西鐵福岡(天神)站	FUK COFFEE 是福岡在地極具人氣的獨立咖啡品牌，其名稱與裝修風格巧妙結合了「福岡機場(FUK)」的航空元素，店內隨處可見登機牌與飛機相關的小巧思。最令遊客魂慶夢縈的莫過於其招牌「雞蛋布丁」，口感厚實綿密且充滿濃郁蛋香，上頭覆蓋的焦糖帶有些微的苦甜韻味，是平衡甜度的靈魂關鍵。咖啡部分亦表現出色，拉花精緻且豆子鮮烘，時常還有如 Hello Kitty 等期間限定的可愛圖案。這裡不僅是攝影打卡的聖地，其高品質的甜點水準更讓許多旅客二訪甚至多次造訪，是福岡精品咖啡文化的代表。	https://youtu.be/fe4Eockm0HM?t=1015	https://maps.app.goo.gl/io55oHQj9XKPSzdV8	
@@ -676,7 +678,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             const grid = document.getElementById('card-grid');
             if (!grid) return;
             const query = (document.getElementById('search-input').value || "").normalize('NFC').trim().toLowerCase();
-            const sel = activeFilters; // 🚀 使用正式生效的 activeFilters
+            const sel = activeFilters; 
             let count = 0;
             grid.innerHTML = attractions.map(item => {
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
@@ -685,7 +687,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 const itemTagId = spotToTags[item.id] || "untagged";
                 const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
                 
-                // 🚀 過濾邏輯連動
+                // 🚀 核心修正：只定義一次變數，唔好撞名
                 const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
                 const matchSource = (sel.source.length === 0 || sel.source.includes(itemSource));
                 const matchReg = (sel.reg.length === 0 || sel.reg.includes(item.reg));
@@ -739,7 +741,29 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             tagChecklist.clear(); saveTags(); refreshTagList(); render();
         }
         function saveTags() { localStorage.setItem('zine_tag_defs', JSON.stringify(tagDefs)); localStorage.setItem('zine_spot_tags', JSON.stringify(spotToTags)); }
-        
+
+		/**
+ 		* 景點標籤分配邏輯
+ 		* 作用：將特定 Tag ID 綁定到景點，並即時儲存與更新 UI
+ 		*/
+		function assignTag(id, value) {
+		    if (value && value.trim() !== "") {
+		        spotToTags[id] = value;
+		    } else {
+		        delete spotToTags[id];
+		    }
+		    saveTags();
+		    render(); 
+		
+		    // 🚀 [新增連動] 如果「TAGGED ATTRACTIONS」開緊，即時重新分組
+		    if(document.getElementById('my-cards-overlay').classList.contains('active')) {
+		        openMyCards(false); // false 表示保留摺疊狀態
+		    }
+		
+		    if (document.getElementById('detail-overlay').classList.contains('active')) {
+		        openDetail(id);
+		    }
+		}
         // 🧪 核心：計算目前哪些選項仲有卡片掛鉤 (Available)
         function getAvailableSet(key) {
             const pool = attractions.filter(item => {
@@ -814,79 +838,93 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         }
 		
         // --- 🎨 詳細視窗 & 編輯視窗 ---
-        function openDetail(id) {
-            const item = attractions.find(a => String(a.id) === String(id)); if(!item) return;
-            const slider = document.getElementById('modal-slider');
-            slider.style.transform = 'translateX(0)';
-            
-            const actionBtn = document.getElementById('modal-action-btn');
-            actionBtn.innerText = "EDIT";
-            actionBtn.className = "btn-bounce state-edit"; 
-            actionBtn.style.display = id.startsWith('user-') ? 'block' : 'none';
-
-            const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
-            const tid = spotToTags[item.id] || "";
-            const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
-
-            // 🚀 [左版面] Tag Dropdown：保留 onchange="assignTag"，即揀即更新
-            const tagDropDetail = `<div class="tag-dropdown-wrapper"><select class="tag-select ${tid?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
-            
-            let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
-            
-            // 渲染詳情頁
-            document.getElementById('det-content').innerHTML = `
-                <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDropDetail}</div>
-                <div class="layer-title-row">
-                    <div class="title-group"><div class="det-cn">${item.cn}</div><div class="det-en">${getVal(item.en, "---")}</div></div>
-                    <div id="det-recom-sticker" class="recom-sticker btn-bounce rated" onclick="toggleRating('${item.id}')">${{'1':'🔍','2':'👍','3':'🙋','':'待定'}[rating]}</div>
-                </div>
-                <div class="det-info-line"><span>區域:</span> ${getVal(item.reg, "未指定")}</div>
-                <div class="det-info-line"><span>鄰近參考:</span> ${getVal(item.nearby, "待補充")}</div>
-                <div class="det-links-row"><a href="${item.nav}" target="_blank" class="link-btn link-nav btn-bounce">📍 導航</a>${refBtnHtml}</div>
-                <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
-                <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
-
-            // 🚀 [右版面] 編輯表單：攞走 onchange 嘅 assignTag，改為純視覺切換
-            if(id.startsWith('user-')) {
-                tempAddRating = rating; 
-                document.getElementById('edit-form-injection').innerHTML = `
-                    <div class="tag-dropdown-wrapper">
-                        <select class="tag-select ${tid?'has-val':''}" id="ed-tag-select" onchange="this.classList.toggle('has-val', this.value !== '')">
-                            <option value="">Tag 待定</option>
-                            ${tagDefs.map(d => `<option value="${d.id}" ${d.id===tid?'selected':''}>${d.name}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;"><span class="form-label" style="margin-bottom:0">推薦評分</span><div id="ed-recom-sticker" class="recom-sticker btn-bounce ${tempAddRating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[tempAddRating]}</div></div>
-                    <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
-                    <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
-                    <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div>
-                    <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${getVal(item.cat,'')}"></div>
-                    <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
-                    <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
-                    <div class="manage-btn-row"><button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE DATA</button><button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button></div>`;
-            }
-            openModal('detail-overlay');
-        }
+		function openDetail(id) {
+		    const item = attractions.find(a => String(a.id) === String(id)); 
+		    if(!item) return;
+		
+		    // 🚀 [修正位] 一開視窗，就將呢個景點嘅資料影印一份落 Draft
+		    currentEditDraft = { 
+		        ...item, 
+		        rating: userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || ''),
+		        tagId: spotToTags[item.id] || ""
+		    };
+		
+		    // 初始化 UI 狀態
+		    const slider = document.getElementById('modal-slider');
+		    if(slider) slider.style.transform = 'translateX(0)'; 
+		    
+		    const actionBtn = document.getElementById('modal-action-btn');
+		    if(actionBtn) {
+		        actionBtn.innerText = "EDIT";
+		        actionBtn.className = "btn-bounce state-edit"; 
+		        actionBtn.style.display = id.startsWith('user-') ? 'block' : 'none';
+		        actionBtn.setAttribute('data-current-id', id); // 紀錄 ID
+		    }
+		
+		    const links = (item.ref || "").split(/[,，]/).map(url => url.trim()).filter(url => url !== "");
+		
+		    // --- 渲染左頁 (View) ---
+		    const tagDropDetail = `<div class="tag-dropdown-wrapper"><select class="tag-select ${currentEditDraft.tagId?'has-val':''}" onchange="assignTag('${item.id}', this.value)"><option value="">Tag 待定</option>${tagDefs.map(d => `<option value="${d.id}" ${d.id===currentEditDraft.tagId?'selected':''}>${d.name}</option>`).join('')}</select></div>`;
+		    
+		    let refBtnHtml = (links.length > 1) ? `<div class="link-btn link-ref split-link-btn btn-bounce"><div class="split-top">參考連結</div><div class="split-bottom">${links.map((u, i) => `<a href="${u}" target="_blank" class="split-num">${i + 1}</a>`).join('')}</div></div>` : (links.length === 1 ? `<a href="${links[0]}" target="_blank" class="link-btn link-ref btn-bounce">參考連結</a>` : `<a href="#" class="link-btn link-ref is-empty">暫無參考</a>`);
+		    
+		    document.getElementById('det-content').innerHTML = `
+		        <div class="layer-tags"><span class="hash-tag">#${getVal(item.cat, "未分類")}</span><span class="hash-tag">#${getVal(item.catType, "---")}</span>${tagDropDetail}</div>
+		        <div class="layer-title-row">
+		            <div class="title-group"><div class="det-cn">${item.cn}</div><div class="det-en">${getVal(item.en, "---")}</div></div>
+		            <div id="det-recom-sticker" class="recom-sticker btn-bounce rated" onclick="toggleRating('${item.id}')">${{'1':'🔍','2':'👍','3':'🙋','':'待定'}[currentEditDraft.rating]}</div>
+		        </div>
+		        <div class="det-info-line"><span>區域:</span> ${getVal(item.reg, "未指定")}</div>
+		        <div class="det-info-line"><span>鄰近參考:</span> ${getVal(item.nearby, "待補充")}</div>
+		        <div class="det-links-row"><a href="${item.nav}" target="_blank" class="link-btn link-nav btn-bounce">📍 導航</a>${refBtnHtml}</div>
+		        <div class="det-points-simple">${getVal(item.points, "暫無重點資訊")}</div>
+		        <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
+		
+		    // --- 渲染右頁 (Edit) ---
+		    if(id.startsWith('user-')) {
+		        document.getElementById('edit-form-injection').innerHTML = `
+		            <div class="tag-dropdown-wrapper">
+		                <select class="tag-select ${currentEditDraft.tagId?'has-val':''}" id="ed-tag-select" onchange="handleEditTagChange(this.value)">
+		                    <option value="">Tag 待定</option>
+		                    ${tagDefs.map(d => `<option value="${d.id}" ${d.id===currentEditDraft.tagId?'selected':''}>${d.name}</option>`).join('')}
+		                </select>
+		            </div>
+		            <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+		                <span class="form-label" style="margin-bottom:0">推薦評分</span>
+		                <div id="ed-recom-sticker" class="recom-sticker btn-bounce ${currentEditDraft.rating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[currentEditDraft.rating]}</div>
+		            </div>
+		            <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${item.cn}"></div>
+		            <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${item.reg || ''}"></div>
+		            <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="ed-cat" value="${item.cat || ''}"></div>
+		            <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${item.catType || ''}"></div>
+		            <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${item.nav}"></div>
+		            <div class="manage-btn-row">
+		                <button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE</button>
+		                <button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button>
+		            </div>`;
+		    }
+		    openModal('detail-overlay');
+		}
 
 		// 🚀 核心：左右滑動效果
-        function toggleEditFlow() {
-            const slider = document.getElementById('modal-slider');
-            const btn = document.getElementById('modal-action-btn');
-            
-            if (btn.innerText === "EDIT") {
-                slider.style.transform = 'translateX(-50%)'; 
-                btn.innerText = "RETURN";
-                // 🚀 切換成主色 (Accent)
-                btn.classList.remove('state-edit');
-                btn.classList.add('state-return');
-            } else {
-                slider.style.transform = 'translateX(0)'; 
-                btn.innerText = "EDIT";
-                // 🚀 切換返紅色 (Danger)
-                btn.classList.remove('state-return');
-                btn.classList.add('state-edit');
-            }
-        }
+
+		function toggleEditFlow() {
+		    const slider = document.getElementById('modal-slider');
+		    const btn = document.getElementById('modal-action-btn');
+		    const currentId = btn.getAttribute('data-current-id');
+		    
+		    if (btn.innerText === "EDIT") {
+		        // 去右頁
+		        slider.style.transform = 'translateX(-50%)'; 
+		        btn.innerText = "RETURN";
+		        btn.className = "btn-bounce state-return";
+		    } else {
+		        // 🚀 [RETURN 撤銷邏輯] 
+		        // 唔儲存任何野，直接用 Database 嘅正本 Reload 視窗內容
+		        // 咁樣就算佢喺右頁亂改過評分/Tag，一返嚟都會變返原狀
+		        openDetail(currentId); 
+		    }
+		}
 
         function openAddModal() {
             tempAddRating = '';
@@ -926,37 +964,51 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
             closeModal('add-overlay'); initAppData(); render();
         }
 
-        function updateSpot(id) {
-            const cn = document.getElementById('ed-cn').value.trim(), 
-                  nav = document.getElementById('ed-nav').value.trim(),
-                  newTag = document.getElementById('ed-tag-select').value; // 🚀 獲取編輯頁的 Tag 值
-            
-            if(!cn || !nav) { alert("必填項目不可為空！"); return; }
-            
-            let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
-            const idx = list.findIndex(a => String(a.id) === String(id));
-            
-            if(idx > -1) { 
-                // 1. 更新景點內容
-                list[idx] = { ...list[idx], cn, nav, baseRecom: tempAddRating, en: document.getElementById('ed-en').value, reg: document.getElementById('ed-reg').value, cat: document.getElementById('ed-cat').value, catType: document.getElementById('ed-type').value };
-                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
-                
-                // 2. 更新評分
-                userRatings[id] = tempAddRating; 
-                localStorage.setItem('zine_ratings', JSON.stringify(userRatings)); 
-
-                // 3. 🚀 更新 Tag (只有喺呢度撳咗 UPDATE 先會真正改 spotToTags)
-                if(newTag) spotToTags[id] = newTag; else delete spotToTags[id];
-                saveTags();
-
-                initAppData(); 
-                render(); 
-
-                // 4. 滑動返轉頭去「詳細內容」並重新整理
-                toggleEditFlow(); 
-                openDetail(id); 
-            }
-        }
+		function updateSpot(id) {
+		    if (!currentEditDraft) return;
+		
+		    // 1. 同步最新的 Input 數值落草稿
+		    currentEditDraft.cn = document.getElementById('ed-cn').value.trim();
+		    currentEditDraft.reg = document.getElementById('ed-reg').value.trim();
+		    currentEditDraft.cat = document.getElementById('ed-cat').value.trim();
+		    currentEditDraft.catType = document.getElementById('ed-type').value.trim();
+		    currentEditDraft.nav = document.getElementById('ed-nav').value.trim();
+		
+		    if (!currentEditDraft.cn || !currentEditDraft.nav) {
+		        // 唯獨係錯資料嗰陣先至出聲提醒
+		        alert("中文名同導航連結係必填！");
+		        return;
+		    }
+		
+		    // 2. 寫入 LocalStorage
+		    let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
+		    const idx = list.findIndex(a => String(a.id) === String(id));
+		    
+		    if (idx > -1) {
+		        list[idx] = { ...currentEditDraft };
+		        localStorage.setItem('zine_user_spots', JSON.stringify(list));
+		        
+		        userRatings[id] = currentEditDraft.rating;
+		        localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
+		        
+		        if (currentEditDraft.tagId) spotToTags[id] = currentEditDraft.tagId; 
+		        else delete spotToTags[id];
+		        saveTags();
+		
+		        // 3. 靜默刷新背景與視窗
+		        initAppData(); 
+		        render(); 
+		
+		        // 🚀 連動刷新：如果「TAGGED ATTRACTIONS」視窗開緊，即刻幫佢排位
+		        if (document.getElementById('my-cards-overlay').classList.contains('active')) {
+		            openMyCards(false);
+		        }
+		
+		        // 🚀 [核心 UX] 直接重新渲染 Detail (左頁)，slider 會自動 Reset 返去 translateX(0)
+		        // 咁樣用家一撳完 UPDATE，畫面就會好順咁滑返去左面預覽頁。
+		        openDetail(id); 
+		    }
+		}
 
         // --- 🚀 MY CARDS 記憶摺疊邏輯 ---
         function openMyCards(isFreshOpen = false) {
@@ -1034,17 +1086,20 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
 
         // 🚀 [歸位零件 2] 評分與刪除功能
         function toggleRating(id) {
-            const m = {'':'1','1':'2','2':'3','3':''};
-            userRatings[id] = m[userRatings[id]||''];
-            localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
-            render(); 
-            if(document.getElementById('detail-overlay').classList.contains('active')) {
-                openDetail(id); 
-            }
-            if(document.getElementById('my-cards-overlay').classList.contains('active')) {
-                openMyCards(false);
-            }
-        }
+		    const m = {'':'1','1':'2','2':'3','3':''};
+		    userRatings[id] = m[userRatings[id]||''];
+		    localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
+		
+		    // 🚀 [同步草稿] 確保左頁撳完，草稿份影印本都一齊更新
+		    if (currentEditDraft && String(currentEditDraft.id) === String(id)) {
+		        currentEditDraft.rating = userRatings[id];
+		    }
+		
+		    render(); 
+		    if(document.getElementById('detail-overlay').classList.contains('active')) {
+		        openDetail(id); 
+		    }
+		}
 
         function cycleAddRating() { 
             const m={'':'1','1':'2','2':'3','3':''}; 
@@ -1063,17 +1118,23 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
         }
 
         function deleteSpot(id) {
-            if(confirm("確定刪除？")) { 
-                let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); 
-                list = list.filter(a => String(a.id) !== String(id)); 
-                localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
-                delete spotToTags[id]; 
-                saveTags(); 
-                initAppData(); 
-                render(); 
-                closeModal('detail-overlay'); 
-            } 
-        }
+		    if(confirm("確定刪除？")) { 
+		        let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]'); 
+		        list = list.filter(a => String(a.id) !== String(id)); 
+		        localStorage.setItem('zine_user_spots', JSON.stringify(list)); 
+		        delete spotToTags[id]; 
+		        saveTags(); 
+		        initAppData(); 
+		        render(); 
+		
+		        // 🚀 [新增連動] 刪除完之後，如果分組視窗開緊，重新掃描一次
+		        if(document.getElementById('my-cards-overlay').classList.contains('active')) {
+		            openMyCards(false);
+		        }
+		
+		        closeModal('detail-overlay'); 
+		    } 
+		}
 
         function clearAllData() {
             if (confirm("⚠️ 確定要清除所有紀錄嗎？\n這將會清空所有評分、標籤及自建景點，且無法還原！")) {
@@ -1081,6 +1142,40 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                 location.reload();
             }
         }
+
+		/**
+		 * 🚀 右頁專用：Tag 變動處理
+		 * 只改草稿，唔改數據庫
+		 */
+		function handleEditTagChange(val) {
+		    if (!currentEditDraft) return;
+		    currentEditDraft.tagId = val; // 更新草稿內的 Tag ID
+		    
+		    // 更新 UI 顏色樣式
+		    const el = document.getElementById('ed-tag-select');
+		    if (el) el.classList.toggle('has-val', val !== '');
+		    console.log("[Draft] Tag updated in sandbox:", val);
+		}
+		
+		/**
+		 * 🚀 右頁專用：評分循環切換
+		 * 只改草稿，唔改數據庫
+		 */
+		function cycleEditRating() { 
+		    if (!currentEditDraft) return;
+		    
+		    const m = {'':'1','1':'2','2':'3','3':''}; 
+		    // 直接改草稿入面嗰粒 rating
+		    currentEditDraft.rating = m[currentEditDraft.rating] || ''; 
+		    
+		    // 即時反映喺右頁粒掣度
+		    const s = document.getElementById('ed-recom-sticker'); 
+		    if (s) {
+		        s.innerText = {'1':'🔍','2':'👍','3':'🙋','':'待定'}[currentEditDraft.rating]; 
+		        s.className = `recom-sticker btn-bounce ${currentEditDraft.rating ? 'rated' : 'empty'}`; 
+		    }
+		    console.log("[Draft] Rating updated in sandbox:", currentEditDraft.rating);
+		}
 
         // 🎯 全份代碼唯一的入口點
         window.onload = function() { 
