@@ -354,13 +354,13 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('add-overlay')">✕</span>
             <div class="modal-body">
-                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">ADD NEW SPOT</h2>
+                <h2 style="margin-bottom:20px; font-weight:900; color:var(--accent);">ADD NEW ATTRACTIONS</h2>
                 <div id="add-tag-dropdown-container"></div>
                 <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
                     <span class="form-label" style="margin-bottom:0">推薦評分</span>
                     <div id="add-recom-sticker" class="recom-sticker btn-bounce empty" style="position:static; width:40px; height:40px;" onclick="cycleAddRating()">待定</div>
                 </div>
-                <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="in-cn" placeholder="必填欄位"></div>
+                <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="in-cn" placeholder="必填欄位..."></div>
                 <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="in-en"></div>
                 <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="in-reg"></div>
                 <div class="form-group"><label class="form-label">類別</label><input type="text" class="form-input" id="in-cat"></div>
@@ -369,8 +369,8 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
                 <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="in-nearby"></div>
                 <div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="in-intro" rows="2" style="resize:none"></textarea></div>
                 <div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="in-ref"></div>
-                <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL" required></div>
-                <button class="action-btn btn-bounce" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; margin-top:10px;" onclick="saveSpot()">SAVE SPOT</button>
+                <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL..." required></div>
+                <button class="action-btn btn-bounce" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; margin-top:10px;" onclick="saveSpot()">SAVE</button>
             </div>
         </div>
     </div>
@@ -798,7 +798,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物	動漫專賣店	週刊少年Jump官
                     openStates[label] = det.open;
                 });
             }
-            let html = `<h2 style="margin: 0 15px 10px 15px; font-weight:900;">MY CARDS</h2>
+            let html = `<h2 style="margin: 0 15px 10px 15px; font-weight:900;">REVIEW TAGGED ATTRACTIONS</h2>
                 <div class="view-toggle-container"><label class="checkbox-wrapper"><input type="checkbox" id="user-only-check" ${isUserOnlyMode?'checked':''} onchange="toggleMyCardsFilter(this.checked)"><div class="custom-checkbox"></div><span class="checkbox-label">MY CARDS ONLY</span></label></div>`;
             if (tagDefs.length === 0) { html += `<p style='text-align:center; padding:40px;'>暫無標籤</p>`; } 
             else {
