@@ -465,10 +465,10 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 				        <option value="隱密秘境">隱密秘境 🤫</option>
 				    </select>
 				</div>
-                <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="in-type"></div>
+                <div class="form-group"><label class="form-label">類別內容</label><input type="text" class="form-input" id="in-type"></div>
                 <div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="in-points"></div>
                 <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="in-nearby"></div>
-                <div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="in-intro" rows="2" style="resize:none"></textarea></div>
+                <div class="form-group"><label class="form-label">簡介</label><textarea class="form-input" id="in-intro" rows="2" style="resize:none"></textarea></div>
                 <div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="in-ref"></div>
                 <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL..." required></div>
                 <button class="action-btn btn-bounce" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; margin-top:10px;" onclick="saveSpot()">SAVE</button>
@@ -919,33 +919,40 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
 		        <div class="det-intro">${getVal(item.intro, "暫無詳細內容")}</div>`;
 		
 		    // --- 渲染右頁 (Edit) ---
-		    if(id.startsWith('user-')) {
-		        document.getElementById('edit-form-injection').innerHTML = `
-		            <div class="tag-dropdown-wrapper">
-		                <select class="tag-select ${currentEditDraft.tagId?'has-val':''}" id="ed-tag-select" onchange="handleEditTagChange(this.value)">
-		                    <option value="">Tag 待定</option>
-		                    ${tagDefs.map(d => `<option value="${d.id}" ${d.id===currentEditDraft.tagId?'selected':''}>${d.name}</option>`).join('')}
-		                </select>
-		            </div>
-		            <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
-		                <span class="form-label" style="margin-bottom:0">推薦評分</span>
-		                <div id="ed-recom-sticker" class="recom-sticker btn-bounce ${currentEditDraft.rating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[currentEditDraft.rating]}</div>
-		            </div>
-		            <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${item.cn}"></div>
-		            <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${item.reg || ''}"></div>
-					<div class="form-group">
-					    <label class="form-label">類別</label>
-					    <select class="tag-select has-val" id="ed-cat" style="width: 100%; height: 42px;">
-					        ${CAT_OPTIONS.map(opt => `<option value="${opt}" ${item.cat === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-					    </select>
-					</div>
-		            <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${item.catType || ''}"></div>
-		            <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${item.nav}"></div>
-		            <div class="manage-btn-row">
-		                <button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE</button>
-		                <button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button>
-		            </div>`;
-		    }
+			if(id.startsWith('user-')) {
+			    document.getElementById('edit-form-injection').innerHTML = `
+			        <div class="tag-dropdown-wrapper">
+			            <select class="tag-select ${currentEditDraft.tagId?'has-val':''}" id="ed-tag-select" onchange="handleEditTagChange(this.value)">
+			                <option value="">Tag 待定</option>
+			                ${tagDefs.map(d => `<option value="${d.id}" ${d.id===currentEditDraft.tagId?'selected':''}>${d.name}</option>`).join('')}
+			            </select>
+			        </div>
+			        <div class="form-group" style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+			            <span class="form-label" style="margin-bottom:0">推薦評分</span>
+			            <div id="ed-recom-sticker" class="recom-sticker btn-bounce ${currentEditDraft.rating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[currentEditDraft.rating]}</div>
+			        </div>
+			        
+			        <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
+			        <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
+			        <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div>
+			        <div class="form-group">
+			            <label class="form-label">主類別</label>
+			            <select class="tag-select has-val" id="ed-cat">
+			                ${CAT_OPTIONS.map(opt => `<option value="${opt}" ${item.cat === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+			            </select>
+			        </div>
+			        <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
+			        <div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="ed-points" value="${getVal(item.points,'')}"></div>
+			        <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="ed-nearby" value="${getVal(item.nearby,'')}"></div>
+			        <div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="ed-intro" rows="3" style="resize:none">${getVal(item.intro,'')}</textarea></div>
+			        <div class="form-group"><label class="form-label">參考連結 (以逗號分隔)</label><input type="text" class="form-input" id="ed-ref" value="${getVal(item.ref,'')}"></div>
+			        <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
+			
+			        <div class="manage-btn-row">
+			            <button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE</button>
+			            <button class="action-btn btn-delete btn-bounce" onclick="deleteSpot('${item.id}')">DELETE</button>
+			        </div>`;
+			}
 		    openModal('detail-overlay');
 		}
 
@@ -1013,23 +1020,29 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             closeModal('add-overlay'); initAppData(); render();
         }
 
+		// [替換指令]：請全量替換現有的 updateSpot(id) 函數
 		function updateSpot(id) {
 		    if (!currentEditDraft) return;
 		
-		    // 1. 同步最新的 Input 數值落草稿
+		    // 1. 從所有輸入框同步最新的數據到草稿對象
 		    currentEditDraft.cn = document.getElementById('ed-cn').value.trim();
+		    currentEditDraft.en = document.getElementById('ed-en').value.trim();
 		    currentEditDraft.reg = document.getElementById('ed-reg').value.trim();
-		    currentEditDraft.cat = document.getElementById('ed-cat').value.trim();
+		    currentEditDraft.cat = document.getElementById('ed-cat').value;
 		    currentEditDraft.catType = document.getElementById('ed-type').value.trim();
+		    currentEditDraft.points = document.getElementById('ed-points').value.trim();
+		    currentEditDraft.nearby = document.getElementById('ed-nearby').value.trim();
+		    currentEditDraft.intro = document.getElementById('ed-intro').value.trim();
+		    currentEditDraft.ref = document.getElementById('ed-ref').value.trim();
 		    currentEditDraft.nav = document.getElementById('ed-nav').value.trim();
 		
+		    // 必填檢查
 		    if (!currentEditDraft.cn || !currentEditDraft.nav) {
-		        // 唯獨係錯資料嗰陣先至出聲提醒
 		        alert("中文名同導航連結係必填！");
 		        return;
 		    }
 		
-		    // 2. 寫入 LocalStorage
+		    // 2. 寫入 LocalStorage (用戶自建景點池)
 		    let list = JSON.parse(localStorage.getItem('zine_user_spots') || '[]');
 		    const idx = list.findIndex(a => String(a.id) === String(id));
 		    
@@ -1037,25 +1050,27 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
 		        list[idx] = { ...currentEditDraft };
 		        localStorage.setItem('zine_user_spots', JSON.stringify(list));
 		        
+		        // 同步評分數據
 		        userRatings[id] = currentEditDraft.rating;
 		        localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
 		        
+		        // 同步標籤關係
 		        if (currentEditDraft.tagId) spotToTags[id] = currentEditDraft.tagId; 
 		        else delete spotToTags[id];
 		        saveTags();
 		
-		        // 3. 靜默刷新背景與視窗
+		        // 3. 靜默 UI 更新
 		        initAppData(); 
 		        render(); 
 		
-		        // 🚀 連動刷新：如果「TAGGED ATTRACTIONS」視窗開緊，即刻幫佢排位
+		        // 如果「TAGGED ATTRACTIONS」視窗開緊，同步重新渲染分組
 		        if (document.getElementById('my-cards-overlay').classList.contains('active')) {
 		            openMyCards(false);
 		        }
 		
-		        // 🚀 [核心 UX] 直接重新渲染 Detail (左頁)，slider 會自動 Reset 返去 translateX(0)
-		        // 咁樣用家一撳完 UPDATE，畫面就會好順咁滑返去左面預覽頁。
+		        // 核心 UX：重開左頁預覽，這會觸發 slider 滑動回 0
 		        openDetail(id); 
+		        console.log("Spot data fully synchronized.");
 		    }
 		}
 
