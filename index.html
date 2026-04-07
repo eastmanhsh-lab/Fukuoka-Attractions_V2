@@ -366,6 +366,28 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 	.form-group .tag-select:not(.has-val) {
 	    color: #b0bec5 !important;
 	}	
+
+	/* --- 🎨 UI 增效調整 (V130.55) --- */
+	/* 1 & 4. TAGS 與 FILTER 視窗按鈕加高加粗 */
+	#tags-overlay .action-btn, 
+	#filter-overlay .action-btn {
+	    height: 38px !important;       /* 增加高度 */
+	    font-size: 12px !important;     /* 字體加大 */
+	    font-weight: 900 !important;    /* 極粗體 */
+	    letter-spacing: 1px;            /* 增加字母間距提升高級感 */
+	}
+	
+	/* 2. ADD ATTRACTION 視窗 SAVE 掣字體強化 */
+	#add-overlay .action-btn {
+	    font-size: 16px !important;
+	    font-weight: 900 !important;
+	}
+	
+	/* 3. 必填欄位專屬深紅色 (Dark Red) */
+	.label-required {
+	    color: #b71c1c !important; /* 深紅色 */
+	}
+		
     </style>
 </head>
 <body onclick="void(0)">
@@ -450,7 +472,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
                     <span class="form-label" style="margin-bottom:0">推薦評分</span>
                     <div id="add-recom-sticker" class="recom-sticker btn-bounce empty" style="position:static; width:40px; height:40px;" onclick="cycleAddRating()">待定</div>
                 </div>
-                <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="in-cn" placeholder="必填欄位..."></div>
+                <div class="form-group"><label class="form-label label-required">中文名*</label><input type="text" class="form-input" id="in-cn" placeholder="必填欄位..."></div>
                 <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="in-en"></div>
                 <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="in-reg"></div>
                 <div class="form-group">
@@ -469,8 +491,8 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
                 <div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="in-points"></div>
                 <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="in-nearby"></div>
                 <div class="form-group"><label class="form-label">簡介</label><textarea class="form-input" id="in-intro" rows="2" style="resize:none"></textarea></div>
-                <div class="form-group"><label class="form-label">參考連結</label><input type="text" class="form-input" id="in-ref"></div>
-                <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL..." required></div>
+                <div class="form-group"><label class="form-label">參考連結 (以逗號分隔)</label><input type="text" class="form-input" id="in-ref"></div>
+                <div class="form-group"><label class="form-label label-required">導航連結*</label><input type="text" class="form-input" id="in-nav" placeholder="Google Maps URL..." required></div>
                 <button class="action-btn btn-bounce" style="width:100%; padding:15px; background:var(--accent); color:white; border:none; margin-top:10px;" onclick="saveSpot()">SAVE</button>
             </div>
         </div>
@@ -932,21 +954,21 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
 			            <div id="ed-recom-sticker" class="recom-sticker btn-bounce ${currentEditDraft.rating?'rated':'empty'}" onclick="cycleEditRating()">${{ '1': '🔍', '2': '👍', '3': '🙋', '': '待定' }[currentEditDraft.rating]}</div>
 			        </div>
 			        
-			        <div class="form-group"><label class="form-label">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
+			        <div class="form-group"><label class="form-label label-required">中文名*</label><input type="text" class="form-input" id="ed-cn" value="${getVal(item.cn,'')}"></div>
 			        <div class="form-group"><label class="form-label">英文名</label><input type="text" class="form-input" id="ed-en" value="${getVal(item.en,'')}"></div>
 			        <div class="form-group"><label class="form-label">區域</label><input type="text" class="form-input" id="ed-reg" value="${getVal(item.reg,'')}"></div>
 			        <div class="form-group">
-			            <label class="form-label">主類別</label>
+			            <label class="form-label">類別</label>
 			            <select class="tag-select has-val" id="ed-cat">
 			                ${CAT_OPTIONS.map(opt => `<option value="${opt}" ${item.cat === opt ? 'selected' : ''}>${opt}</option>`).join('')}
 			            </select>
 			        </div>
-			        <div class="form-group"><label class="form-label">內容類別</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
+			        <div class="form-group"><label class="form-label">類別內容</label><input type="text" class="form-input" id="ed-type" value="${getVal(item.catType,'')}"></div>
 			        <div class="form-group"><label class="form-label">重點介紹</label><input type="text" class="form-input" id="ed-points" value="${getVal(item.points,'')}"></div>
 			        <div class="form-group"><label class="form-label">鄰近參考</label><input type="text" class="form-input" id="ed-nearby" value="${getVal(item.nearby,'')}"></div>
-			        <div class="form-group"><label class="form-label">策展簡介</label><textarea class="form-input" id="ed-intro" rows="3" style="resize:none">${getVal(item.intro,'')}</textarea></div>
+			        <div class="form-group"><label class="form-label">簡介</label><textarea class="form-input" id="ed-intro" rows="3" style="resize:none">${getVal(item.intro,'')}</textarea></div>
 			        <div class="form-group"><label class="form-label">參考連結 (以逗號分隔)</label><input type="text" class="form-input" id="ed-ref" value="${getVal(item.ref,'')}"></div>
-			        <div class="form-group"><label class="form-label">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
+			        <div class="form-group"><label class="form-label label-required">導航連結*</label><input type="text" class="form-input" id="ed-nav" value="${getVal(item.nav,'')}"></div>
 			
 			        <div class="manage-btn-row">
 			            <button class="action-btn btn-update btn-bounce" onclick="updateSpot('${item.id}')">UPDATE</button>
