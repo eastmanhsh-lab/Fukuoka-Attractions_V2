@@ -397,7 +397,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
             <h1 class="app-title">FUKUOKA</h1>
             <div class="nav-row">
                 <div class="search-pill-group">
-                    <input type="text" id="search-input" class="search-input" placeholder="中文名 / 英文名 / 區域 / 類別內容 / Tag..." oninput="render()">
+                    <input type="text" id="search-input" class="search-input" placeholder="中文名 / 英文名 / 區域 / 類別 / 類別內容 / Tag..." oninput="render()">
                     <div class="filter-trigger btn-bounce" onclick="openFilterModal()">FILTER</div>
                 </div>
             </div>
@@ -414,7 +414,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
 
     <main class="grid" id="card-grid"></main>
 
-    <div id="tags-overlay" class="modal-overlay" onclick="closeTagsModal()">
+    <div id="tags-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeTagsModal()">✕</span>
             <div class="modal-body">
@@ -428,7 +428,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         </div>
     </div>
 
-    <div id="my-cards-overlay" class="modal-overlay" onclick="closeModal('my-cards-overlay')">
+    <div id="my-cards-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('my-cards-overlay')">✕</span>
             <div class="modal-body">
@@ -438,14 +438,14 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         </div>
     </div>
 
-    <div id="edit-overlay" class="modal-overlay" onclick="closeModal('edit-overlay')">
+    <div id="edit-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('edit-overlay')">✕</span>
             <div class="modal-body" id="edit-modal-body"></div>
         </div>
     </div>
 
-    <div id="detail-overlay" class="modal-overlay" onclick="closeModal('detail-overlay')">
+    <div id="detail-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modal-action-btn" class="btn-bounce" onclick="toggleEditFlow()">EDIT</div>
             
@@ -462,7 +462,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         </div>
     </div>
 
-    <div id="add-overlay" class="modal-overlay" onclick="closeModal('add-overlay')">
+    <div id="add-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('add-overlay')">✕</span>
             <div class="modal-body">
@@ -498,7 +498,7 @@ body.modal-open { overflow: hidden !important; height: 100vh !important; }
         </div>
     </div>
 
-    <div id="filter-overlay" class="modal-overlay" onclick="closeModal('filter-overlay')">
+    <div id="filter-overlay" class="modal-overlay">
         <div class="modal-content" onclick="event.stopPropagation()">
             <span class="close-btn btn-bounce" onclick="closeModal('filter-overlay')">✕</span>
             <div class="modal-body">
