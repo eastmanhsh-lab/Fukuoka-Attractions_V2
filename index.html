@@ -734,6 +734,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             </div>`;
         }
 
+ 
         function render() {
             const grid = document.getElementById('card-grid');
             if (!grid) return;
@@ -747,7 +748,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
                 const itemTagId = spotToTags[item.id] || "untagged";
                 const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
                 
-                // 🚀 核心修正：只定義一次變數，唔好撞名
+                // 🚀 核心修正：統一在此定義變數，確保過濾邏輯完整且不報錯
                 const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
                 const matchSource = (sel.source.length === 0 || sel.source.includes(itemSource));
                 const matchReg = (sel.reg.length === 0 || sel.reg.includes(item.reg));
@@ -765,7 +766,9 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             }).join('');
             
             const totalRegs = [...new Set(attractions.map(a => a.reg))].filter(v=>v).length;
-            const totalCats = [...new Set(attractions.map(a => a.cat))].filter(v=>v).length;
+            document.getElementById('status-display').innerHTML = `<span class="status-item">[${count}/${attractions.length}] 景點</span><span class="status-item">[${sel.tags.length || tagDefs.length}/${tagDefs.length}] 標籤</span><span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>`;
+        }
+
             document.getElementById('status-display').innerHTML = `<span class="status-item">[${count}/${attractions.length}] 景點</span><span class="status-item">[${sel.tags.length || tagDefs.length}/${tagDefs.length}] 標籤</span><span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>`;
         }
 
@@ -777,12 +780,15 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             const inp = document.getElementById(`inp-${id}`); const btn = document.getElementById(`eb-${id}`);
             if (inp && btn) { inp.readOnly = false; inp.focus(); btn.innerText = "SAVE"; btn.style.color = "var(--palette-1)"; }
         }
+        
         function refreshTagList() {
             const container = document.getElementById('tag-list-container');
             if(!container) return;
-            container.innerHTML = tagDefs.map(tag => `<div class="tag-row"><input type="checkbox" style="width:18px; height:18px;" onchange="updateTagCheck('${tag.id}', this.checked)"><input type="text" class="tag-input" id="inp-${tag.id}" value="${tag.name}" placeholder="輸入名稱..." readonly><div class="tag-edit-btn btn-bounce" id="eb-${tag.id}" onclick="toggleTagEdit('${tag.id}')">EDIT</div></div>`).join('');
+            // 🚀 [排序修正] 確保管理視窗內的 Tag 按名稱順序排列
+            container.innerHTML = [...tagDefs].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant')).map(tag => `<div class="tag-row"><input type="checkbox" style="width:18px; height:18px;" onchange="updateTagCheck('${tag.id}', this.checked)"><input type="text" class="tag-input" id="inp-${tag.id}" value="${tag.name}" placeholder="輸入名稱..." readonly><div class="tag-edit-btn btn-bounce" id="eb-${tag.id}" onclick="toggleTagEdit('${tag.id}')">EDIT</div></div>`).join('');
             updateDelLabel();
         }
+
         function toggleTagEdit(id) {
             const inp = document.getElementById(`inp-${id}`), btn = document.getElementById(`eb-${id}`);
             if (!inp || !btn) return;
@@ -1103,26 +1109,26 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             const openStates = {};
             if (!isFreshOpen) {
                 modalBody.querySelectorAll('details').forEach(det => {
-                    const label = det.querySelector('summary').textContent.split('(')[0].trim();
-                    openStates[label] = det.open;
+                    const labelText = det.querySelector('summary').textContent;
+                    const cleanLabel = labelText.substring(0, labelText.lastIndexOf('(')).trim();
+                    openStates[cleanLabel] = det.open;
                 });
             }
-            let html = `<h2 style="margin: 0 15px 10px 15px; font-weight:900;">TAGGED ATTRACTIONS</h2>
-                <div class="view-toggle-container"><label class="checkbox-wrapper"><input type="checkbox" id="user-only-check" ${isUserOnlyMode?'checked':''} onchange="toggleMyCardsFilter(this.checked)"><div class="custom-checkbox"></div><span class="checkbox-label">MY CARDS ONLY</span></label></div>`;
+            let html = `<h2 style="margin: 0 15px 10px 15px; font-weight:900;">TAGGED ATTRACTIONS</h2><div class="view-toggle-container"><label class="checkbox-wrapper"><input type="checkbox" ${isUserOnlyMode?'checked':''} onchange="isUserOnlyMode=this.checked; openMyCards(false)"><div class="custom-checkbox"></div><span class="checkbox-label">MY CARDS ONLY</span></label></div>`;
             if (tagDefs.length === 0) { html += `<p style='text-align:center; padding:40px;'>暫無標籤</p>`; } 
             else {
+                // 🚀 [排序修正] 確保分組標題按名稱 A-Z/筆劃 順序排好
                 [...tagDefs].sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant')).forEach(tag => {
                     let cards = attractions.filter(a => spotToTags[a.id] === tag.id);
                     if (isUserOnlyMode) cards = cards.filter(a => a.id.startsWith('user-'));
                     const isOpen = (!isFreshOpen && openStates[tag.name]) ? 'open' : '';
-                    
-                    // 🚀 核心修正位：統一呼叫 openDetail，唔再分開 user- 定 hardcode
                     html += `<details class="my-cards-group" ${isOpen}><summary>${tag.name} (${cards.length})</summary><div class="my-cards-grid-inner">
                         ${cards.length > 0 ? cards.map(item => generateCardHtml(item, `openDetail('${item.id}')`)).join('') : '<p style="font-size:11px; color:#ccc; padding:15px; grid-column:1/-1;">(0) 暫無卡片</p>'}
                     </div></details>`;
                 });
             }
-            modalBody.innerHTML = html; openModal('my-cards-overlay');
+            modalBody.innerHTML = html; 
+            openModal('my-cards-overlay');
         }
 
         function toggleMyCardsFilter(checked) { isUserOnlyMode = checked; openMyCards(false); }
@@ -1172,20 +1178,23 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
 
         // 🚀 [歸位零件 2] 評分與刪除功能
         function toggleRating(id) {
-		    const m = {'':'1','1':'2','2':'3','3':''};
-		    userRatings[id] = m[userRatings[id]||''];
-		    localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
-		
-		    // 🚀 [同步草稿] 確保左頁撳完，草稿份影印本都一齊更新
-		    if (currentEditDraft && String(currentEditDraft.id) === String(id)) {
-		        currentEditDraft.rating = userRatings[id];
-		    }
-		
-		    render(); 
-		    if(document.getElementById('detail-overlay').classList.contains('active')) {
-		        openDetail(id); 
-		    }
-		}
+            const m = {'':'1','1':'2','2':'3','3':''};
+            userRatings[id] = m[userRatings[id]||''];
+            localStorage.setItem('zine_ratings', JSON.stringify(userRatings));
+            if (currentEditDraft && String(currentEditDraft.id) === String(id)) currentEditDraft.rating = userRatings[id];
+            
+            render(); // 更新背景 Home Screen
+            
+            // 🚀 [新增連動] 如果 Tagged Attractions 分組視窗開緊，即時重新繪製
+            if(document.getElementById('my-cards-overlay').classList.contains('active')) {
+                openMyCards(false); 
+            }
+            
+            // 如果詳細視窗開緊，同步重新渲染內容
+            if(document.getElementById('detail-overlay').classList.contains('active')) {
+                openDetail(id); 
+            }
+        }
 
         function cycleAddRating() { 
             const m={'':'1','1':'2','2':'3','3':''}; 
