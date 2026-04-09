@@ -734,13 +734,14 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             </div>`;
         }
 
- 
         function render() {
             const grid = document.getElementById('card-grid');
             if (!grid) return;
             const query = (document.getElementById('search-input').value || "").normalize('NFC').trim().toLowerCase();
             const sel = activeFilters; 
             let count = 0;
+            
+            // 🚀 核心：這裡只做一次 map 渲染
             grid.innerHTML = attractions.map(item => {
                 const rating = userRatings[item.id] !== undefined ? userRatings[item.id] : (item.baseRecom || '');
                 if (rating === '0') return '';
@@ -748,7 +749,6 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
                 const itemTagId = spotToTags[item.id] || "untagged";
                 const itemSource = item.id.startsWith('user-') ? 'user' : 'system';
                 
-                // 🚀 核心修正：統一在此定義變數，確保過濾邏輯完整且不報錯
                 const matchTag = (sel.tags.length === 0 || sel.tags.includes(itemTagId));
                 const matchSource = (sel.source.length === 0 || sel.source.includes(itemSource));
                 const matchReg = (sel.reg.length === 0 || sel.reg.includes(item.reg));
@@ -762,13 +762,14 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
                 
                 const match = matchTag && matchSource && matchReg && matchCat && matchCatType && matchRecom && (searchStr.includes(query));
                 if (!match) return '';
-                count++; return generateCardHtml(item);
+                count++; 
+                return generateCardHtml(item);
             }).join('');
             
             const totalRegs = [...new Set(attractions.map(a => a.reg))].filter(v=>v).length;
-            document.getElementById('status-display').innerHTML = `<span class="status-item">[${count}/${attractions.length}] 景點</span><span class="status-item">[${sel.tags.length || tagDefs.length}/${tagDefs.length}] 標籤</span><span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>`;
-        }
-
+            const totalCats = [...new Set(attractions.map(a => a.cat))].filter(v=>v).length;
+            
+            // 🚀 確保這裡只有一組 innerHTML 設定，且結尾括號正確
             document.getElementById('status-display').innerHTML = `<span class="status-item">[${count}/${attractions.length}] 景點</span><span class="status-item">[${sel.tags.length || tagDefs.length}/${tagDefs.length}] 標籤</span><span class="status-item">[${sel.reg.length || totalRegs}/${totalRegs}] 區域</span>`;
         }
 
@@ -858,7 +859,7 @@ JUMP SHOP 福岡店	JUMP SHOP Fukuoka	購物採買	動漫專賣店	週刊少年J
             if (k === 'recom') return ['1', '2', '3', ''];
             if (k === 'tags') return ['untagged', ...tagDefs.map(d => d.id)];
             return [...new Set(attractions.map(a => a[k]).filter(v => v))].sort();
-        }
+		}
 
         function initFilters() {
             const container = document.getElementById('dynamic-filter-container'); if(!container) return;
